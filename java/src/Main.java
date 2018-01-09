@@ -46,20 +46,14 @@ public class Main {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
 
-
                 //Si les noeuds i et j ne sont pas reliés, alors on dit que la quantité de bande passante occupé entre les deux noeuds est infinie
-                if (graph.getBandwidths()[i][j] == 0) {
+                IntVar bp_i_j = graph.getBandwidths()[i][j] == 0
 
-                    IntVar bp_i_j = VariableFactory.bounded("bp used between node " + i + " and node " + j, Integer.MAX_VALUE,
-                            Integer.MAX_VALUE, solver);
+                        ? VariableFactory.bounded("bp used between node " + i + " and node " + j, Integer.MAX_VALUE,
+                            Integer.MAX_VALUE, solver)
 
-                } else {
-
-                    IntVar bp_i_j = VariableFactory.bounded("bp used between node " + i + " and node " + j, 0,
+                        : VariableFactory.bounded("bp used between node " + i + " and node " + j, 0,
                             (int) graph.getBandwidths()[i][j], solver);
-
-                }
-
             }
         }
 
