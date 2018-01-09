@@ -53,11 +53,12 @@ public class Main {
                     IntVar bp_i_j = VariableFactory.bounded("bp used between node " + i + " and node " + j, Integer.MAX_VALUE,
                             Integer.MAX_VALUE, solver);
 
+                } else {
+
+                    IntVar bp_i_j = VariableFactory.bounded("bp used between node " + i + " and node " + j, 0,
+                            (int) graph.getBandwidths()[i][j], solver);
+
                 }
-
-
-                IntVar bp_i_j = VariableFactory.bounded("bp used between node " + i + " and node " + j, 0,
-                        (int) graph.getBandwidths()[i][j], solver);
 
             }
         }
