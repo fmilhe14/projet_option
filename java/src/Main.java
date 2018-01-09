@@ -47,7 +47,7 @@ public class Main {
             for (int j = 0; j < N; j++) {
 
                 //Si les noeuds i et j ne sont pas reliés, alors on dit que la quantité de bande passante occupé entre les deux noeuds est infinie
-                IntVar bp_i_j = graph.getBandwidths()[i][j] == 0
+                bps[i][j] = graph.getBandwidths()[i][j] == 0
 
                         ? VariableFactory.bounded("bp used between node " + i + " and node " + j, Integer.MAX_VALUE,
                             Integer.MAX_VALUE, solver)
