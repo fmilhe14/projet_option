@@ -12,12 +12,14 @@ import java.util.List;
 public class Graph {
 
     private List<Node> nodes;
-    private List<Edge> edges;
+    private double[][] latencies;
+    private double[][] bandwidths;
 
 
-    public Graph(List<Node> nodes, List<Edge> edges){
+    public Graph(List<Node> nodes, double[][] latencies, double[][] bandwidths){
 
         this.nodes = nodes;
-        this.edges = edges;
+        this.latencies = latencies;
+        this.bandwidths = bandwidths;
     }
 }
