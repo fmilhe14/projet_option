@@ -133,12 +133,11 @@ public class Main {
     }
 
     private static void cpuConstraintOnComponent(Graph graph, Solver solver, IntVar[] cpus, int i, List<Component> components) {
-        for (int k = 0; k < components.size(); k++) {
 
-            Component cf = components.get(k);
+        for (Component component : components) {
 
-            int cpuUsed = cpus[cf.getPosition().getValue()].getValue();
-            int cpuRequired = cf.getCpu();
+            int cpuUsed = cpus[component.getPosition().getValue()].getValue();
+            int cpuRequired = component.getCpu();
             int cpuMax = graph.getNodes().get(i).getCpu();
 
             int value = cpuUsed + cpuRequired - cpuMax;
@@ -153,12 +152,10 @@ public class Main {
 
     private static void memoryConstraintOnComponent(Graph graph, Solver solver, IntVar[] mems, int i, List<Component> components) {
 
-        for (int k = 0; k < components.size(); k++) {
+        for (Component component : components) {
 
-            Component cf = components.get(k);
-
-            int memUsed = mems[cf.getPosition().getValue()].getValue();
-            int memRequired = cf.getMem();
+            int memUsed = mems[component.getPosition().getValue()].getValue();
+            int memRequired = component.getMem();
             int memMax = graph.getNodes().get(i).getMem();
 
             int value = memUsed + memRequired - memMax;
