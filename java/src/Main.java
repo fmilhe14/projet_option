@@ -12,6 +12,7 @@ public class Main {
 
     public static void main(String[] args) {
 
+        //Parsing des données
         List<Service> serviceList = Parser.parseServices();
         Graph graph = Parser.parseGraph();
 
@@ -19,7 +20,9 @@ public class Main {
 
         Solver solver = new Solver("");
 
-        //Créer les variables intermédiaires cpu(i) : quantité de cpu occu
+        //Déclaration des variables intermédiaires
+
+        //Quantité de cpu occupés dans un noeud
 
         IntVar[] cpus = new IntVar[N];
 
@@ -31,7 +34,7 @@ public class Main {
 
         }
 
-        //Créer les variables intermédiaires cpu(i) : quantité de cpu occupée au noeud i
+        //Quantité de mémoire utilisée dans un noeud
 
         IntVar[] mems = new IntVar[N];
 
@@ -43,7 +46,7 @@ public class Main {
 
         }
 
-        // Créer les variables bp(i, j) : quantité de bande passant occupée entre i et j
+        //Quantité de bande passante occupée entre deux noeuds
 
         IntVar[][] bps = new IntVar[N][N];
 
@@ -61,11 +64,13 @@ public class Main {
             }
         }
 
-        //Contraintes sur les Noeuds
+        //Contraintes
 
         for (int i = 0; i < N; i++) {
 
             for (Service s : serviceList) {
+
+                //Contraintes sur les Noeuds
 
                 cpuConstraintOnComponent(graph, solver, cpus, i, s.getFixedComponents());
                 cpuConstraintOnComponent(graph, solver, cpus, i, s.getUnfixedComponents());
@@ -73,22 +78,16 @@ public class Main {
                 memoryConstraintOnComponent(graph, solver, mems, i, s.getUnfixedComponents());
 
 
-            }
-        }
+                //Contraintes sur les services
+                for (Component cf : s.getFixedComponents()) {
+                    for (Component cm : s.getUnfixedComponents()) {
 
-        //Contraintes sur les services
-
-        for (Service s : serviceList) {
-
-            for (Component cf : s.getFixedComponents()) {
-
-                for (Component cm : s.getUnfixedComponents()) {
-
-                    pathContraints(graph, N, solver, s, cf, cm);
-
+                        pathContraints(graph, N, solver, s, cf, cm);
+                    }
                 }
             }
         }
+
     }
 
     private static void pathContraints(Graph graph, int n, Solver solver, Service s, Component cf, Component cm) {
