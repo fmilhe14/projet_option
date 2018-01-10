@@ -15,7 +15,7 @@ public class Component {
     private int mem;
     private IntVar position;
 
-    public Component(int id, int cpu, int mem, IntVar position){
+    public Component(int id, int cpu, int mem, IntVar position) {
 
         this.id = id;
         this.cpu = cpu;

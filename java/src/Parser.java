@@ -8,7 +8,7 @@ import java.util.List;
 public class Parser {
 
     //TODO Implémenter le parser
-    public static List<Service> parseServices(){
+    public static List<Service> parseServices() {
 
         return new ArrayList<Service>();
     }

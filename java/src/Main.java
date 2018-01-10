@@ -1,4 +1,6 @@
-import components.*;
+import components.Component;
+import components.Graph;
+import components.Service;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.IntConstraintFactory;
 import org.chocosolver.solver.variables.IntVar;
@@ -7,7 +9,6 @@ import org.chocosolver.solver.variables.VariableFactory;
 import java.util.List;
 
 public class Main {
-
 
     public static void main(String[] args) {
 
@@ -25,7 +26,7 @@ public class Main {
         for (int i = 0; i < N; i++) {
 
             IntVar cpui = VariableFactory.bounded("cpu used at node " + i, 0,
-                     graph.getNodes().get(i).getCpu(), solver);
+                    graph.getNodes().get(i).getCpu(), solver);
             cpus[i] = cpui;
 
         }
@@ -37,7 +38,7 @@ public class Main {
         for (int i = 0; i < N; i++) {
 
             IntVar memi = VariableFactory.bounded("mem used at node " + i, 0,
-                     graph.getNodes().get(i).getMem(), solver);
+                    graph.getNodes().get(i).getMem(), solver);
             mems[i] = memi;
 
         }
@@ -56,7 +57,7 @@ public class Main {
                         Integer.MAX_VALUE, solver)
 
                         : VariableFactory.bounded("bp used between node " + i + " and node " + j, 0,
-                         graph.getBandwidths()[i][j], solver);
+                        graph.getBandwidths()[i][j], solver);
             }
         }
 
@@ -77,11 +78,11 @@ public class Main {
 
         //Contraintes sur les services
 
-        for(Service s : serviceList){
+        for (Service s : serviceList) {
 
-            for(Component cf: s.getFixedComponents()){
+            for (Component cf : s.getFixedComponents()) {
 
-                for(Component cm: s.getUnfixedComponents()){
+                for (Component cm : s.getUnfixedComponents()) {
 
                     pathContraints(graph, N, solver, s, cf, cm);
 
@@ -99,26 +100,26 @@ public class Main {
 
         solver.post(IntConstraintFactory.alldifferent(path));
         solver.post(IntConstraintFactory.arithm(path[0], "=", VariableFactory.zero(solver)));
-        solver.post(IntConstraintFactory.arithm(path[n -1], "=", VariableFactory.bounded("CF", path[0].getValue(), path[0].getValue(), solver)));
+        solver.post(IntConstraintFactory.arithm(path[n - 1], "=", VariableFactory.bounded("CF", path[0].getValue(), path[0].getValue(), solver)));
 
         //Calcul de la latence du chemin avec la variable tmp
         int tmp = 0;
 
         //On impose que la latence entre deux noeuds successifs d'un chemin ne soit pas infinie (c'est à dire qu'ils sont bien reliés dans le graphe)
-        for(int i = 0; i<path.length; i++){
+        for (int i = 0; i < path.length; i++) {
 
             int succ = path[i].getValue();
 
-            if(i != succ) {
+            if (i != succ) {
 
-               int l =  graph.getLatencies()[i][succ];
+                int l = graph.getLatencies()[i][succ];
 
-               IntVar latency = VariableFactory.bounded("", l, l, solver);
-               IntVar infinite = VariableFactory.bounded("", Integer.MAX_VALUE, Integer.MAX_VALUE, solver);
+                IntVar latency = VariableFactory.bounded("", l, l, solver);
+                IntVar infinite = VariableFactory.bounded("", Integer.MAX_VALUE, Integer.MAX_VALUE, solver);
 
-               solver.post(IntConstraintFactory.arithm(latency, "<", infinite));
+                solver.post(IntConstraintFactory.arithm(latency, "<", infinite));
 
-               tmp += latency.getValue();
+                tmp += latency.getValue();
 
             }
 
@@ -163,7 +164,7 @@ public class Main {
 
             int value = memUsed + memRequired - memMax;
 
-            IntVar var1 = VariableFactory.bounded("",  value,  value, solver);
+            IntVar var1 = VariableFactory.bounded("", value, value, solver);
             IntVar var2 = VariableFactory.bounded("", 0, 0, solver);
 
             solver.post(IntConstraintFactory.arithm(var1, ">=", var2));

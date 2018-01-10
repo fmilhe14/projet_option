@@ -17,7 +17,7 @@ public class Graph {
     private int[][] bandwidths;
 
 
-    public Graph(List<Node> nodes, List<Service> services, int[][] latencies, int[][] bandwidths){
+    public Graph(List<Node> nodes, List<Service> services, int[][] latencies, int[][] bandwidths) {
 
         this.nodes = nodes;
         this.services = services;

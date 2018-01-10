@@ -18,7 +18,7 @@ public class Node {
     private int netIn;
     private int netOut;
 
-    public Node(int cpu, int mem, int netIn, int netOut){
+    public Node(int cpu, int mem, int netIn, int netOut) {
 
         this.cpu = cpu;
         this.mem = mem;

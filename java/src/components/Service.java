@@ -19,7 +19,7 @@ public class Service {
     private IntVar[][][] paths;
 
     public Service(List<Component> fixedComponents, List<Component> unfixedComponents, int[][] requiredLatencies,
-                   int[][] bandwidths, IntVar[][][] paths){
+                   int[][] bandwidths, IntVar[][][] paths) {
 
         this.fixedComponents = fixedComponents;
         this.unfixedComponents = unfixedComponents;
@@ -27,5 +27,5 @@ public class Service {
         this.requiredBandwidths = bandwidths;
         this.paths = paths;
 
-        }
+    }
 }
