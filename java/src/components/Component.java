@@ -11,11 +11,11 @@ import org.chocosolver.solver.variables.IntVar;
 public class Component {
 
     private int id;
-    private double cpu;
-    private double mem;
+    private int cpu;
+    private int mem;
     private IntVar position;
 
-    public Component(int id, double cpu, double mem, IntVar position){
+    public Component(int id, int cpu, int mem, IntVar position){
 
         this.id = id;
         this.cpu = cpu;

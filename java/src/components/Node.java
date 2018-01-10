@@ -13,12 +13,12 @@ import lombok.Setter;
 public class Node {
 
 
-    private double cpu;
-    private double mem;
-    private double netIn;
-    private double netOut;
+    private int cpu;
+    private int mem;
+    private int netIn;
+    private int netOut;
 
-    public Node(double cpu, double mem, double netIn, double netOut){
+    public Node(int cpu, int mem, int netIn, int netOut){
 
         this.cpu = cpu;
         this.mem = mem;

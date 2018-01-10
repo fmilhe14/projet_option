@@ -13,11 +13,11 @@ public class Graph {
 
     private List<Node> nodes;
     private List<Service> services;
-    private double[][] latencies;
-    private double[][] bandwidths;
+    private int[][] latencies;
+    private int[][] bandwidths;
 
 
-    public Graph(List<Node> nodes, List<Service> services, double[][] latencies, double[][] bandwidths){
+    public Graph(List<Node> nodes, List<Service> services, int[][] latencies, int[][] bandwidths){
 
         this.nodes = nodes;
         this.services = services;

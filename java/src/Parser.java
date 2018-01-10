@@ -7,24 +7,15 @@ import java.util.List;
 
 public class Parser {
 
+    //TODO Implémenter le parser
     public static List<Service> parseServices(){
 
         return new ArrayList<Service>();
     }
 
-    public static double[][] parseLatencies(){
+    //TODO Implémenter le parser
+    public static Graph parseGraph() {
 
-        return new double[1][1];
+        return new Graph(new ArrayList<Node>(), new ArrayList<Service>(), new int[1][1], new int[1][1]);
     }
-
-    public static double[][] parseBandwidths(){
-
-        return new double[1][1];
-    }
-
-    public static Graph parseGraph(){
-
-        return new Graph(new ArrayList<Node>(), new ArrayList<Edge>());
-    }
-
 }
