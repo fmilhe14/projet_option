@@ -14,17 +14,17 @@ public class Service {
 
     private List<Component> fixedComponents;
     private List<Component> unfixedComponents;
-    private double[][] latencies;
-    private double[][] bandwidths;
+    private int[][] requiredLatencies;
+    private int[][] requiredBandwidths;
     private IntVar[][][] paths;
 
-    public Service(List<Component> fixedComponents, List<Component> unfixedComponents, double[][] latencies,
-                   double[][] bandwidths, IntVar[][][] paths){
+    public Service(List<Component> fixedComponents, List<Component> unfixedComponents, int[][] requiredLatencies,
+                   int[][] bandwidths, IntVar[][][] paths){
 
         this.fixedComponents = fixedComponents;
         this.unfixedComponents = unfixedComponents;
-        this.latencies = latencies;
-        this.bandwidths = bandwidths;
+        this.requiredLatencies = requiredLatencies;
+        this.requiredBandwidths = bandwidths;
         this.paths = paths;
 
         }
