@@ -12,13 +12,13 @@ public class Main {
 
     public static void main(String[] args) {
 
+        Solver solver = new Solver("");
+
         //Parsing des données
-        List<Service> serviceList = Parser.parseServices();
+        List<Service> serviceList = Parser.parseServices(solver);
         Graph graph = Parser.parseGraph();
 
         int N = graph.getNodes().size();
-
-        Solver solver = new Solver("");
 
         //Déclaration des variables intermédiaires
 
@@ -61,8 +61,34 @@ public class Main {
 
                         : VariableFactory.bounded("bp used between node " + i + " and node " + j, 0,
                         graph.getBandwidths()[i][j], solver);
+
+
             }
         }
+
+
+        for(int i = 0; i < N; i++){
+
+            int comb = 0;
+
+            for (Service s : serviceList) {
+
+                for (Component cf : s.getFixedComponents()) {
+                    for (Component cm : s.getUnfixedComponents()) {
+                        for (int j = 0; j < N + 1; j++) {
+
+                            int cfId = cf.getId();
+                            int cmId = cm.getId();
+
+                            comb += s.getPathReification()[cfId][cmId][j].getLB() * s.getRequiredCpus()[cfId][cmId];
+                        }
+                    }
+                }
+            }
+
+            solver.post(IntConstraintFactory.arithm(cpus[i], "=", comb));
+        }
+
 
         //Contraintes
 

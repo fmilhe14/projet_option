@@ -1,6 +1,7 @@
 import components.Graph;
 import components.Node;
 import components.Service;
+import org.chocosolver.solver.Solver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 public class Parser {
 
     //TODO Implémenter le parser
-    public static List<Service> parseServices() {
+    public static List<Service> parseServices(Solver solver) {
 
         return new ArrayList<Service>();
     }
