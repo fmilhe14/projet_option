@@ -4,8 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.chocosolver.solver.Solver;
-import org.chocosolver.solver.constraints.Constraint;
-import org.chocosolver.solver.constraints.IntConstraintFactory;
 import org.chocosolver.solver.constraints.set.SetConstraintsFactory;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.SetVar;
@@ -18,14 +16,14 @@ public class Arc {
 
     private int id;
     private int bandwidth;
-    private Graph graph;
+    private Data data;
     private Solver solver;
     private IntVar bandwidthConso;
     private SetVar coupleComposantSurArc;
 
-    public Arc(int id,int bandwidth,Graph graph,Solver solver){
+    public Arc(int id, int bandwidth, Data data, Solver solver){
 
-        int nbCoupleComponents = graph.getCoupleComponentes().length;
+        int nbCoupleComponents = data.getCoupleComponentes().length;
         int[] enveloppe = new int[nbCoupleComponents];
         for (int i = 0; i <nbCoupleComponents ; i++) {
             enveloppe[i]=i;
@@ -34,7 +32,7 @@ public class Arc {
         this.id=id;
         this.bandwidth=bandwidth;
         this.solver=solver;
-        this.graph=graph;
+        this.data = data;
 
         this.bandwidthConso = VariableFactory.bounded("bandePassanteConsommée",0,this.getBandwidth(),
                 this.getSolver());
@@ -48,7 +46,7 @@ public class Arc {
     private void coherenceconstraints(){
 
         // contrainte qui fait le lien entre les couples de composant utilisant l'arc et la bande passante consommée
-        solver.post(SetConstraintsFactory.sum(this.coupleComposantSurArc,this.graph.getCoupleComponentesRequiredBandwidth()
+        solver.post(SetConstraintsFactory.sum(this.coupleComposantSurArc,this.data.getCoupleComponentesRequiredBandwidth()
                 ,0,this.bandwidthConso,true));
 
         // les contraites vérifiant "bandwidthConso"<="bandwidthDispo" sont comprises dans la définition des variables bandwidthConso

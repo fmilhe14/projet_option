@@ -7,9 +7,13 @@ import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.Constraint;
 import org.chocosolver.solver.constraints.IntConstraintFactory;
 import org.chocosolver.solver.constraints.set.SetConstraintsFactory;
+import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.SetVar;
 import org.chocosolver.solver.variables.VariableFactory;
+import org.chocosolver.solver.variables.impl.BoolVarImpl;
+
+import static org.chocosolver.solver.constraints.nary.cnf.LogOp.ifOnlyIf;
 
 @Builder
 @Getter
@@ -32,16 +36,53 @@ public Path(Graph graph,int indiceComponent1,int indiceComponent2,int requiredLa
 
 
 
-    this.graph=graph;
+    this.graph = graph ;
     this.indiceComponent1=indiceComponent1;
     this.indiceComponent2 = indiceComponent2;
     this.requiredLatencie = requiredLatencie;
     this.solver = solver ;
 
+    int nbNodes = this.getGraph().getNodes().size();
+    int nbArc = this.getGraph().getArcs().size();
+
+    this.successeur = VariableFactory.boundedArray("successeur",nbNodes+1,0,nbNodes.size(),getSolver());
+
+
+    int[] enveloppe1 = new int[nbNodes];
+    for (int i = 0; i <nbNodes ; i++) {
+        enveloppe1[i]=i;
+    }
+
+    this.noeudsVisités = VariableFactory.set("noeudsVisités",enveloppe1,new int[]{},this.getSolver());
+
+    int[] enveloppe2 = new int[nbArc];
+    for (int i = 0; i <nbArc ; i++) {
+        enveloppe1[i]=i;
+    }
+
+    this.arcsVisités = VariableFactory.set("arcsVisités",enveloppe2,new int[]{},this.getSolver());
+
 
 
 
 }
+
+private void successeurNoeudsConstraints(){
+
+    int n = this.getSuccesseur().length;
+    for (int i = 0; i < n; i++) {
+
+       Constraint different = IntConstraintFactory.arithm(this.successeur[i],"=!",i);
+       Constraint contient = SetConstraintsFactory.member(this.getSuccesseur()[i],this.getNoeudsVisités());
+
+       solver.post(ifOnlyIf(IntConstraintFactory.arithm(this.successeur[i],"=!",i).reif(),
+               SetConstraintsFactory.member(this.getSuccesseur()[i],this.getNoeudsVisités())));
+    }
+
+}
+
+
+
 }
 
 
