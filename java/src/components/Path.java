@@ -62,16 +62,27 @@ public Path(Graph graph,int indiceComponent1,int indiceComponent2,int requiredLa
 
     this.arcsVisités = VariableFactory.set("arcsVisités",enveloppe2,new int[]{},this.getSolver());
 
-    IntConstraintFactory.alldifferent(this.getSuccesseur());
+
+    solver.post();
+
+    //Contraintes ALL DIFFERENT sur tous les successeurs : on ne repasse pas par un noeud
+    solver.post(IntConstraintFactory.alldifferent(this.getSuccesseur()));
+
+    //La liste successeur comment par le premier composant
+    solver.post(IntConstraintFactory.arithm(successeur[0], "=", indiceComponent1));
+
+    //Le dernier composant boucle sur l'indice 0
+    solver.post(IntConstraintFactory.arithm(successeur[indiceComponent2], "=", 0));
 
 
 }
+
 
 private void successeurNoeudsConstraints(){
 
     int n = this.getSuccesseur().length;
     for (int i = 0; i < n; i++) {
-       Constraint different = IntConstraintFactory.arithm(this.successeur[i],"!=",i,"!=",0);
+       Constraint different = IntConstraintFactory.arithm(this.successeur[i],"!=", VariableFactory.bounded("", i, i, solver),"!=",0);
        Constraint contient = SetConstraintsFactory.member(this.getSuccesseur()[i],this.getNoeudsVisités());
        ifOnlyIf(different.reif(),contient.reif());
     }
