@@ -81,12 +81,31 @@ public Path(Graph graph,int indiceComponent1,int indiceComponent2,int requiredLa
 private void successeurNoeudsConstraints(){
 
     int n = this.getSuccesseur().length;
-    for (int i = 0; i < n; i++) {
+
+    for (int i = 0; i < n ; i++) {
+
        Constraint different = IntConstraintFactory.arithm(this.successeur[i],"!=", VariableFactory.bounded("", i, i, solver),"!=",0);
        Constraint contient = SetConstraintsFactory.member(this.getSuccesseur()[i],this.getNoeudsVisités());
        ifOnlyIf(different.reif(),contient.reif());
     }
 
+}
+
+
+private void successeurArcsConstraints(){
+
+        int n = this.getSuccesseur().length;
+
+        for (int i = 0; i < n ; i++) {
+
+            Constraint different = IntConstraintFactory.arithm(this.successeur[i],"!=", VariableFactory.bounded("", i, i, solver),"!=",0);
+
+            Constraint contient = SetConstraintsFactory.member(VariableFactory.bounded("", this.graph.getRetrieveArcId().get(new int[]{i, this.successeur[i].getLB()}),
+                    this.graph.getRetrieveArcId().get(new int[]{i, this.successeur[i].getLB()}), solver),this.getArcsVisités());
+
+            ifOnlyIf(different.reif(),contient.reif());
+
+        }
 }
 
 

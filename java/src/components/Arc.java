@@ -15,13 +15,18 @@ import org.chocosolver.solver.variables.VariableFactory;
 public class Arc {
 
     private int id;
+    private Node node1;
+    private Node node2;
     private int bandwidth;
     private Data data;
     private Solver solver;
     private IntVar bandwidthConso;
     private SetVar coupleComposantSurArc;
 
-    public Arc(int id, int bandwidth, Data data, Solver solver){
+    public Arc(int id, Node node1, Node node2, int bandwidth, Data data, Solver solver){
+
+        this.node1 = node1;
+        this.node2 = node2;
 
         int nbCoupleComponents = data.getCoupleComponentes().length;
         int[] enveloppe = new int[nbCoupleComponents];
