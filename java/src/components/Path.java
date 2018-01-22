@@ -45,7 +45,7 @@ public Path(Graph graph,int indiceComponent1,int indiceComponent2,int requiredLa
     int nbNodes = this.getGraph().getNodes().size();
     int nbArc = this.getGraph().getArcs().size();
 
-    this.successeur = VariableFactory.boundedArray("successeur",nbNodes+1,0,nbNodes.size(),getSolver());
+    this.successeur = VariableFactory.boundedArray("successeur",nbNodes+1,0,nbNodes,getSolver());
 
 
     int[] enveloppe1 = new int[nbNodes];
@@ -62,7 +62,7 @@ public Path(Graph graph,int indiceComponent1,int indiceComponent2,int requiredLa
 
     this.arcsVisités = VariableFactory.set("arcsVisités",enveloppe2,new int[]{},this.getSolver());
 
-
+    IntConstraintFactory.alldifferent(this.getSuccesseur());
 
 
 }
@@ -71,12 +71,9 @@ private void successeurNoeudsConstraints(){
 
     int n = this.getSuccesseur().length;
     for (int i = 0; i < n; i++) {
-
-       Constraint different = IntConstraintFactory.arithm(this.successeur[i],"=!",i);
+       Constraint different = IntConstraintFactory.arithm(this.successeur[i],"!=",i,"!=",0);
        Constraint contient = SetConstraintsFactory.member(this.getSuccesseur()[i],this.getNoeudsVisités());
-
-       solver.post(ifOnlyIf(IntConstraintFactory.arithm(this.successeur[i],"=!",i).reif(),
-               SetConstraintsFactory.member(this.getSuccesseur()[i],this.getNoeudsVisités())));
+       ifOnlyIf(different.reif(),contient.reif());
     }
 
 }
