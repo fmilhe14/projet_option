@@ -3,29 +3,21 @@ import components.Service;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
 public class Parser {
-    private String propertiesURL;
+    private Properties prop;
 
     public Parser(String fileName) {
-        this.propertiesURL = System.getProperty("user.dir").concat("/java/ressources/").concat(fileName);
-    }
-
-    public static List<Service> services() {
-
-        Properties prop = new Properties();
+        String propertiesURL = System.getProperty("user.dir").concat("/java/ressources/").concat(fileName);
         InputStream input = null;
-        List<Service> res = new LinkedList<>();
+
+        prop = new Properties();
 
         try {
             input = new FileInputStream(propertiesURL);
             prop.load(input);
-
-            System.out.println(prop.getProperty("services.number"));
-
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -37,7 +29,19 @@ public class Parser {
                 }
             }
         }
-        return res;
+    }
+
+    private Properties getProperties() {
+        return prop;
+    }
+
+    private String getProperty(String key) {
+        return getProperties().getProperty(key);
+    }
+
+    public List<Service> services() {
+         getProperty("services.number");
+         return null;
     }
 
     public int[][] networkLatencies() {
