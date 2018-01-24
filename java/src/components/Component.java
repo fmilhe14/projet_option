@@ -1,12 +1,11 @@
 package components;
 
-import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.chocosolver.solver.variables.IntVar;
 
-@Builder
-@Getter
+@EqualsAndHashCode@Getter
 @Setter
 public class Component {
 

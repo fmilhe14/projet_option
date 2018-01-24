@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Builder
@@ -12,80 +13,113 @@ import java.util.List;
 @Setter
 public class Data {
 
-
+    //Service and components to deploy
     private List<Service> services;
-    private int[][] latencies;
-    private int[][] bandwidths;
-    private List<Component> components ;
-    private int[] componentsRequiredCpu ;
-    private int[] componentsRequiredmem ;
-    private Component[][] coupleComponentes ; // tableau des couples de composants en relation
-    private int[] coupleComponentesRequiredBandwidth ; // bande passante consommée par couple
+    private List<Component> components;
+
+    //Network features
+    private int[][] networkLatencies;
+    private int[][] networkBandwidths;
+
+    //Requirements
+    private int[] componentsRequiredCpu;
+    private int[] componentsRequiredmem;
+    private int[] coupleComponentsRequiredBandwidth;
+    private int[] coupleComponentsRequiredLatency;
 
 
-    public Data(List<Service> services, int[][] latencies, int[][] bandwidths) {
+    public Data(List<Service> services, int[][] networkLatencies, int[][] networkBandwidths) {
 
 
         this.services = services;
-        this.latencies = latencies;
-        this.bandwidths = bandwidths;
         this.components = composantFactory(services);
+
+        this.networkLatencies = networkLatencies;
+        this.networkBandwidths = networkBandwidths;
+
         this.componentsRequiredCpu = componentsRequiredCpuFactory(this.components);
         this.componentsRequiredmem = componentsRequiredMemFactory(this.components);
         this.coupleComponentesFactory();
 
     }
 
-    private static List<Component> composantFactory(List<Service> services){
-        List<Component> lcomponent = new ArrayList<Component>();
-        for(Service s :services){
-            for(Component c : s.getComponents()){
-                lcomponent.add(c);
+    //Methode pour récupérer tous les
+    private List<Component> composantFactory(List<Service> services) {
+
+        this.components = new ArrayList<>();
+
+        for (Service s : services) {
+
+            for (Component c : s.getComponents()) {
+
+                components.add(c);
             }
         }
-        return lcomponent ;
+
+        components.sort(Comparator.comparing(Component::getId)); //Pour avoir la liste triée en fonction des indices des composants
+
+        return components;
     }
 
-    private static int[] componentsRequiredCpuFactory(List<Component> componentList){
+    private int[] componentsRequiredCpuFactory(List<Component> componentList) {
+
         int n = componentList.size();
         int[] componentsRequiredCpu = new int[n];
+
         for (int i = 0; i < n; i++) {
-            componentsRequiredCpu[i]=componentList.get(i).getCpu();
+
+            componentsRequiredCpu[i] = componentList.get(i).getCpu();
         }
         return componentsRequiredCpu;
     }
 
-    private static int[] componentsRequiredMemFactory(List<Component> componentList){
+    private int[] componentsRequiredMemFactory(List<Component> componentList) {
+
         int n = componentList.size();
         int[] componentsRequiredMem = new int[n];
+
         for (int i = 0; i < n; i++) {
-            componentsRequiredMem[i]=componentList.get(i).getMem();
+
+            componentsRequiredMem[i] = componentList.get(i).getMem();
         }
         return componentsRequiredMem;
     }
 
-    private void coupleComponentesFactory(){
-        ArrayList<Component[]> lcoupleComponentes = new ArrayList<Component[]>();
-        ArrayList<Integer> lcoupleComponentesRequiredBandwidth = new ArrayList<Integer>();
-        int bandwidths;
-        for(Service s :this.getServices()){
+    private void coupleComponentesFactory() {
+
+        ArrayList<Integer> coupleComponentsRequiredBandwidth = new ArrayList<>();
+
+        int bandwidths = 0;
+
+        for (Service s : this.getServices()) {
+
             int nbComponent = s.getComponents().size();
+
             for (int i = 0; i < nbComponent; i++) {
-                for (int j = i+1; j < nbComponent; j++) {
-                    bandwidths = s.getRequiredBandwidths()[i][j];
-                    if(bandwidths!=0){
-                       lcoupleComponentes.add(new Component[]{s.getComponents().get(i),s.getComponents().get(j)});
-                        lcoupleComponentesRequiredBandwidth.add(bandwidths);                    }
+
+                Component c = s.getComponents().get(i);
+
+                for (int j = i + 1; j < nbComponent; j++) {
+
+                    Component c1 = s.getComponents().get(j);
+
+                    bandwidths = s.getRequiredBandwidths().get(new Component[]{c, c1});
+
+                    if (bandwidths != 0) {
+
+                        coupleComponentsRequiredBandwidth.add(bandwidths);
+                    }
                 }
             }
         }
-        int nbCouple = lcoupleComponentesRequiredBandwidth.size();
-        this.coupleComponentesRequiredBandwidth = new int[nbCouple];
-        this.coupleComponentes = new Component[nbCouple][2];
+
+        int nbCouple = coupleComponentsRequiredBandwidth.size();
+        this.coupleComponentsRequiredBandwidth = new int[nbCouple];
+
         for (int i = 0; i < nbCouple; i++) {
-            this.coupleComponentesRequiredBandwidth[i]=lcoupleComponentesRequiredBandwidth.get(i);
-            this.coupleComponentes[i][0] = lcoupleComponentes.get(i)[0];
-            this.coupleComponentes[i][1] = lcoupleComponentes.get(i)[1];
+
+            this.coupleComponentsRequiredBandwidth[i] = coupleComponentsRequiredBandwidth.get(i);
+
         }
 
     }

@@ -4,13 +4,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.chocosolver.solver.Solver;
-import org.chocosolver.solver.constraints.IntConstraintFactory;
-import org.chocosolver.solver.constraints.ReificationConstraint;
-import org.chocosolver.solver.variables.BoolVar;
-import org.chocosolver.solver.variables.IntVar;
-import org.chocosolver.solver.variables.VariableFactory;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 @Builder
 @Getter
@@ -18,36 +16,49 @@ import java.util.List;
 public class Service {
 
     private List<Component> Components;
-    private int[] requiredCpus;
-    private int[] requiredMemory;
-    private int[][] requiredLatencies;
-    private int[][] requiredBandwidths;
-    private IntVar[][][] paths;
+    private Map<Component[], Integer> requiredLatencies;
+    private Map<Component[], Integer> requiredBandwidths;
+    private Path[] paths;
+    private Graph graph;
 
 
-    public Service(List<Component> Components, int[][] requiredLatencies,
-                   int[] requiredCpus, int[] requiredMemory,
-                   int[][] bandwidths, int N, Solver solver) {
+    public Service(List<Component> Components, Graph graph, Map<Component[], Integer> requiredLatencies,
+                   Map<Component[], Integer> bandwidths, Solver solver) {
 
         this.Components = Components;
         this.requiredLatencies = requiredLatencies;
         this.requiredBandwidths = bandwidths;
-        this.requiredCpus = requiredCpus;
-        this.requiredMemory = requiredMemory ;
+        this.graph = graph;
 
-        this.paths = new IntVar[Components.size()][Components.size()][N+1];
+        this.paths = initiatePaths(solver);
+    }
 
-        for(int i = 0; i < Components.size(); i++){
 
-            for(int j = 0; j < Components.size(); j++){
+    private Path[] initiatePaths(Solver solver) {
 
-                for(int k = 0; k < N + 1; k++){
+        Iterator<Component[]> pairsOfComponents = this.requiredLatencies.keySet().iterator();
 
-                    this.paths[i][j][k] = VariableFactory.bounded("", 0, N, solver);
+        ArrayList<Component[]> effectivePairs = new ArrayList<>();
 
-                }
-            }
+        while(pairsOfComponents.hasNext()){
+
+            Component[] pair = pairsOfComponents.next();
+            if(requiredLatencies.get(pair) != -1) effectivePairs.add(pair) ;
         }
+
+        Path[] paths = new Path[effectivePairs.size()];
+
+        int i = 0;
+        for(Component[] pair : effectivePairs){
+
+            int indiceComponent1 = pair[0].getId();
+            int indiceComponent2 = pair[1].getId();
+
+            paths[i] = new Path(graph, indiceComponent1, indiceComponent2, this.requiredLatencies.get(pair), solver);
+            i ++;
+        }
+
+        return paths;
     }
 
 }

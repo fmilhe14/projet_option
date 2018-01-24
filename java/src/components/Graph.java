@@ -13,20 +13,26 @@ import java.util.Map;
 @Setter
 public class Graph {
 
-    private List<Node> nodes ;
-    private List<Arc> arcs ;
-    private Map<int[], Integer> retrieveArcId;
+    private List<Node> nodes;
+    private List<Edge> edges;
+    private Map<int[], Integer> edgeIds;
 
-    public Graph(List<Node> nodes,List<Arc> arcs){
-        this.arcs = arcs ;
+    public Graph(List<Node> nodes, List<Edge> edges) {
 
-        this.retrieveArcId = new HashMap<>();
+        this.edges = edges;
+        this.edgeIds = getEdgeIds(this.edges);
+        this.nodes = nodes;
+    }
 
-        for(Arc arc: arcs){
+    private Map<int[], Integer> getEdgeIds(List<Edge> edges){
 
-            retrieveArcId.put(new int[]{arc.getNode1().getId(), arc.getNode2().getId()}, arc.getId());
+        Map<int[], Integer> map = new HashMap<>();
+
+        for (Edge edge : edges) {
+
+            map.put(new int[]{edge.getNode1().getId(), edge.getNode2().getId()}, edge.getId());
         }
 
-        this.nodes =nodes ;
+        return map;
     }
 }
