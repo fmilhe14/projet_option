@@ -20,15 +20,15 @@ public class Node {
     private int id;
     private int cpu;
     private int mem;
-    private int netIn;
-    private int netOut;
+
     private Data data;
+
     private SetVar CompSurNoeud;
     private IntVar cpuConso;
     private IntVar memConso;
     private Solver solver;
 
-    public Node(int cpu, int mem, int netIn, int netOut, Solver solver, Data data) {
+    public Node(int cpu, int mem, int id, Solver solver, Data data) {
 
         int nbComponent = data.getComponents().size();
         int[] enveloppe = new int[nbComponent];
@@ -40,8 +40,6 @@ public class Node {
         this.data = data;
         this.cpu = cpu;
         this.mem = mem;
-        this.netIn = netIn;
-        this.netOut = netOut;
         this.solver = solver;
         this.cpuConso = VariableFactory.bounded("cpuconsomé", 0, this.cpu, this.solver);
         this.memConso = VariableFactory.bounded("memconsomé", 0, this.mem, this.solver);

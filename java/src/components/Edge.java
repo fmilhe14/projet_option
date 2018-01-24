@@ -17,13 +17,16 @@ public class Edge {
     private int id;
     private Node node1;
     private Node node2;
+
     private int bandwidth;
+    private int latency;
+
     private Data data;
     private Solver solver;
     private IntVar bandwidthConso;
     private SetVar coupleComposantSurArc;
 
-    public Edge(int id, Node node1, Node node2, int bandwidth, Data data, Solver solver) {
+    public Edge(int id, Node node1, Node node2, int bandwidth, int latency, Data data, Solver solver) {
 
         this.node1 = node1;
         this.node2 = node2;
@@ -41,6 +44,8 @@ public class Edge {
 
         this.id = id;
         this.bandwidth = bandwidth;
+        this.latency = latency;
+
         this.solver = solver;
         this.data = data;
 

@@ -3,6 +3,7 @@ package components;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.chocosolver.solver.Solver;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,6 +21,8 @@ public class Data {
     //Network features
     private int[][] networkLatencies;
     private int[][] networkBandwidths;
+    private int[] networkCpus;
+    private int[] networkMem;
 
     //Requirements
     private int[] componentsRequiredCpu;
@@ -27,19 +30,26 @@ public class Data {
     private int[] coupleComponentsRequiredBandwidth;
     private int[] coupleComponentsRequiredLatency;
 
+    //Solver
+    private Solver solver;
 
-    public Data(List<Service> services, int[][] networkLatencies, int[][] networkBandwidths) {
 
+    public Data(List<Service> services, int[][] networkLatencies, int[][] networkBandwidths, int[] networkCpus, int[] networkMem, Solver solver) {
 
         this.services = services;
         this.components = composantFactory(services);
 
         this.networkLatencies = networkLatencies;
         this.networkBandwidths = networkBandwidths;
+        this.networkCpus = networkCpus;
+        this.networkMem = networkMem;
+        this.networkBandwidths = getNetworkLatencies();
 
         this.componentsRequiredCpu = componentsRequiredCpuFactory(this.components);
         this.componentsRequiredmem = componentsRequiredMemFactory(this.components);
-        this.coupleComponentesFactory();
+        this.coupleComponentsRequirementsFactory();
+
+        this.solver = solver;
 
     }
 
@@ -50,10 +60,7 @@ public class Data {
 
         for (Service s : services) {
 
-            for (Component c : s.getComponents()) {
-
-                components.add(c);
-            }
+            components.addAll(s.getComponents());
         }
 
         components.sort(Comparator.comparing(Component::getId)); //Pour avoir la liste triée en fonction des indices des composants
@@ -85,11 +92,13 @@ public class Data {
         return componentsRequiredMem;
     }
 
-    private void coupleComponentesFactory() {
+    private void coupleComponentsRequirementsFactory() {
 
         ArrayList<Integer> coupleComponentsRequiredBandwidth = new ArrayList<>();
+        ArrayList<Integer> coupleComponentsRequiredLatency = new ArrayList<>();
 
-        int bandwidths = 0;
+        int bandwidths;
+        int latency;
 
         for (Service s : this.getServices()) {
 
@@ -103,11 +112,15 @@ public class Data {
 
                     Component c1 = s.getComponents().get(j);
 
-                    bandwidths = s.getRequiredBandwidths().get(new Component[]{c, c1});
+                    Component[] pair = new Component[]{c, c1};
+
+                    bandwidths = s.getRequiredBandwidths().get(pair);
+                    latency =  s.getRequiredLatencies().get(pair);
 
                     if (bandwidths != 0) {
 
                         coupleComponentsRequiredBandwidth.add(bandwidths);
+                        coupleComponentsRequiredLatency.add(latency);
                     }
                 }
             }
@@ -119,8 +132,30 @@ public class Data {
         for (int i = 0; i < nbCouple; i++) {
 
             this.coupleComponentsRequiredBandwidth[i] = coupleComponentsRequiredBandwidth.get(i);
+            this.coupleComponentsRequiredLatency[i] = coupleComponentsRequiredLatency.get(i);
 
         }
 
     }
+
+
+    public List<Node> buildNodes(){
+
+        ArrayList<Node> nodes = new ArrayList<>();
+
+        for(int i = 0; i < networkCpus.length; i++){
+
+            nodes.add(new Node(networkCpus[i], networkMem[i], i, this.solver, this));
+        }
+
+        return nodes;
+    }
+
+    public List<Edge> buildEdges(){
+
+        ArrayList<Edge> edges = new ArrayList<>();
+
+        for(int i = 0; )
+    }
+
 }

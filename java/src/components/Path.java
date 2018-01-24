@@ -11,6 +11,8 @@ import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.SetVar;
 import org.chocosolver.solver.variables.VariableFactory;
 
+import java.util.*;
+
 import static org.chocosolver.solver.constraints.nary.cnf.LogOp.ifOnlyIf;
 
 @Builder
@@ -19,9 +21,10 @@ import static org.chocosolver.solver.constraints.nary.cnf.LogOp.ifOnlyIf;
 public class Path {
 
     private Graph graph;
+
     private int indiceComponent1;
     private int indiceComponent2;
-    private int requiredLatencie;
+    private int requiredLatency;
     private Solver solver;
 
     private IntVar[] successeur;
@@ -29,13 +32,11 @@ public class Path {
     private SetVar arcsVisites;
 
 
-    public Path(Graph graph, int indiceComponent1, int indiceComponent2, int requiredLatencie, Solver solver) {
+    public Path(Graph graph ,int indiceComponent1, int indiceComponent2, int requiredLatency, Solver solver) {
 
-
-        this.graph = graph;
         this.indiceComponent1 = indiceComponent1;
         this.indiceComponent2 = indiceComponent2;
-        this.requiredLatencie = requiredLatencie;
+        this.requiredLatency = requiredLatency;
         this.solver = solver;
 
         int nbNodes = this.getGraph().getNodes().size();
@@ -76,6 +77,9 @@ public class Path {
         //Si un noeud a un sucesseur, alors ce noeud doit être dans le SetVar des noeuds visités
         successeurNoeudsConstraints();
 
+        //Contrainte de latence
+        pathLatencyConstraint();
+
     }
 
     private void successeurNoeudsConstraints() {
@@ -99,8 +103,8 @@ public class Path {
 
             Constraint different = IntConstraintFactory.arithm(this.successeur[i], "!=", VariableFactory.bounded("", i, i, solver), "!=", 0);
 
-            Constraint contient = SetConstraintsFactory.member(VariableFactory.bounded("", this.graph.getEdgeIds().get(new int[]{i, this.successeur[i].getLB()}),
-                    this.graph.getEdgeIds().get(new int[]{i, this.successeur[i].getLB()}), solver), this.getArcsVisites());
+            Constraint contient = SetConstraintsFactory.member(VariableFactory.bounded("", getEdgeIds(this.graph.getEdges()).get(new int[]{i, this.successeur[i].getLB()}),
+                    getEdgeIds(this.graph.getEdges()).get(new int[]{i, this.successeur[i].getLB()}), solver), this.getArcsVisites());
 
             ifOnlyIf(different.reif(), contient.reif());
 
@@ -109,9 +113,27 @@ public class Path {
 
     private void pathLatencyConstraint() {
 
-        int currentLatency = 0;
-        int[] visitedEdges = this.getArcsVisites().getValues();
+        this.getGraph().getEdges().sort(Comparator.comparing(Edge::getId));
 
+        int[] latenciesEdges = new int[this.getGraph().getEdges().size()];
+
+        for(int i = 0; i < this.getGraph().getEdges().size(); i++) latenciesEdges[i] = this.getGraph().getEdges().get(i).getLatency();
+
+        solver.post(SetConstraintsFactory.sum(this.getArcsVisites(), latenciesEdges
+                , 0, VariableFactory.bounded("",this.requiredLatency, this.requiredLatency, solver), true));
+
+    }
+
+    private Map<int[], Integer> getEdgeIds(List<Edge> edges){
+
+        Map<int[], Integer> map = new HashMap<>();
+
+        for (Edge edge : edges) {
+
+            map.put(new int[]{edge.getNode1().getId(), edge.getNode2().getId()}, edge.getId());
+        }
+
+        return map;
     }
 
 }
