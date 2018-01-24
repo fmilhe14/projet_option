@@ -11,11 +11,13 @@ public class Main {
 
         Solver solver = new Solver("");
 
-        List<Service> services = Parser;
-        int[][] networkLatencies = Parser.getNetworkLatencies();
-        int[][] networkBandwidths = Parser.getNetworkBandwidths();
-        int[] networkCpus = Parser.getNetworkCpus();
-        int[] networkMem = Parser.getNetworkMem();
+        Parser parser = new Parser("");
+
+        List<Service> services = parser.services();
+        int[][] networkLatencies = parser.networkLatencies();
+        int[][] networkBandwidths = parser.networkBandwidths();
+        int[] networkCpus = parser.networkCpus();
+        int[] networkMem = parser.networkMem();
 
         Data data = new Data(services, networkLatencies, networkBandwidths, networkCpus, networkMem, solver);
 
@@ -24,12 +26,14 @@ public class Main {
 
         Graph graph = new Graph(nodes, edges);
 
+        ArrayList<Path[]> allPaths = initiatePaths(services, graph, solver);
+
         solver.findSolution();
 
     }
 
 
-    private ArrayList<Path[]> initiatePaths(List<Service> services, Graph graph, Solver solver) {
+    private static ArrayList<Path[]> initiatePaths(List<Service> services, Graph graph, Solver solver) {
 
         ArrayList<Path[]> allPaths = new ArrayList<>();
 
