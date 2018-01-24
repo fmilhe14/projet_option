@@ -90,7 +90,7 @@ public class Parser {
         if (property == null) {
             throw new InvalidKeyException("property ".concat(key).concat(" is not in ".concat(fileName)));
         } else {
-            Matcher m = Pattern.compile("\\-?[0-9]+").matcher(property);
+            Matcher m = Pattern.compile("-?[0-9]+").matcher(property);
             while (m.find()) {
                 values.add(parseInt(m.group()));
             }
