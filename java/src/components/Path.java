@@ -1,6 +1,5 @@
 package components;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.chocosolver.solver.Solver;
@@ -11,11 +10,13 @@ import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.SetVar;
 import org.chocosolver.solver.variables.VariableFactory;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.chocosolver.solver.constraints.nary.cnf.LogOp.ifOnlyIf;
 
-@Builder
 @Getter
 @Setter
 public class Path {

@@ -1,6 +1,5 @@
 package components;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.chocosolver.solver.Solver;
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-@Builder
 @Getter
 @Setter
 public class Data {
@@ -115,7 +113,7 @@ public class Data {
                     Component[] pair = new Component[]{c, c1};
 
                     bandwidths = s.getRequiredBandwidths().get(pair);
-                    latency =  s.getRequiredLatencies().get(pair);
+                    latency = s.getRequiredLatencies().get(pair);
 
                     if (bandwidths != 0) {
 
@@ -138,24 +136,37 @@ public class Data {
 
     }
 
-
-    public List<Node> buildNodes(){
+    public List<Node> buildNodes() {
 
         ArrayList<Node> nodes = new ArrayList<>();
 
-        for(int i = 0; i < networkCpus.length; i++){
+        for (int i = 0; i < networkCpus.length; i++) {
 
-            nodes.add(new Node(networkCpus[i], networkMem[i], i, this.solver, this));
+            nodes.add(new Node(i, this));
         }
 
         return nodes;
     }
 
-    public List<Edge> buildEdges(){
+    public List<Edge> buildEdges(List<Node> nodes) {
+
+        nodes.sort(Comparator.comparing(Node::getId)); //Pour avoir la liste triée en fonction des indices des composants
 
         ArrayList<Edge> edges = new ArrayList<>();
 
-        for(int i = 0; )
+        int edgeId = 0;
+
+        for (int i = 0; i < networkLatencies.length; i++) {
+            for (int j = i + 1; j < networkLatencies.length; j++) {
+
+                if (networkLatencies[i][j] != Integer.MAX_VALUE) {
+
+                    edges.add(new Edge(edgeId, nodes.get(i), nodes.get(j), this));
+
+                }
+            }
+        }
+        return edges;
     }
 
 }

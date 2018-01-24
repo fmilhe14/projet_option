@@ -14,7 +14,7 @@ public class Parser {
         this.propertiesURL = System.getProperty("user.dir").concat("/java/ressources/").concat(fileName);
     }
 
-    public List<Service> services() {
+    public static List<Service> services() {
 
         Properties prop = new Properties();
         InputStream input = null;

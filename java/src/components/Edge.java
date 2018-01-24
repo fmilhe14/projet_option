@@ -1,15 +1,12 @@
 package components;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.set.SetConstraintsFactory;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.SetVar;
 import org.chocosolver.solver.variables.VariableFactory;
 
-@Builder
 @Getter
 @Setter
 public class Edge {
@@ -22,11 +19,14 @@ public class Edge {
     private int latency;
 
     private Data data;
-    private Solver solver;
+
     private IntVar bandwidthConso;
     private SetVar coupleComposantSurArc;
 
-    public Edge(int id, Node node1, Node node2, int bandwidth, int latency, Data data, Solver solver) {
+    public Edge(int id, Node node1, Node node2, Data data) {
+
+        this.data = data;
+
 
         this.node1 = node1;
         this.node2 = node2;
@@ -43,17 +43,14 @@ public class Edge {
         }
 
         this.id = id;
-        this.bandwidth = bandwidth;
-        this.latency = latency;
-
-        this.solver = solver;
-        this.data = data;
+        this.bandwidth = data.getNetworkBandwidths()[node1.getId()][node2.getId()];
+        this.latency = data.getNetworkLatencies()[node1.getId()][node2.getId()];
 
         this.bandwidthConso = VariableFactory.bounded("bandePassanteConsommée", 0, this.getBandwidth(),
-                this.getSolver());
+                data.getSolver());
 
         this.coupleComposantSurArc = VariableFactory.set("coupleComposantSurArc", enveloppe, new int[]{},
-                this.getSolver());
+                data.getSolver());
 
         this.coherenceconstraints();
     }
@@ -61,10 +58,10 @@ public class Edge {
     private void coherenceconstraints() {
 
         // contrainte qui fait le lien entre les couples de composant utilisant l'arc et la bande passante consommée
-        solver.post(SetConstraintsFactory.sum(this.coupleComposantSurArc, this.data.getCoupleComponentsRequiredBandwidth()
+
+        data.getSolver().post(SetConstraintsFactory.sum(this.coupleComposantSurArc, this.data.getCoupleComponentsRequiredBandwidth()
                 , 0, this.bandwidthConso, true));
 
-        // les contraites vérifiant "bandwidthConso"<="bandwidthDispo" sont comprises dans la définition des variables bandwidthConso
     }
 
 }

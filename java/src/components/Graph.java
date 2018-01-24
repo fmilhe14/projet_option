@@ -1,13 +1,10 @@
 package components;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.chocosolver.solver.Solver;
 
-import java.util.*;
+import java.util.List;
 
-@Builder
 @Getter
 @Setter
 public class Graph {
