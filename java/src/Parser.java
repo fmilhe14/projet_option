@@ -1,22 +1,65 @@
-import components.Graph;
-import components.Node;
 import components.Service;
-import org.chocosolver.solver.Solver;
 
-import java.util.ArrayList;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 public class Parser {
+    private String propertiesURL;
 
-    //TODO Implémenter le parser
-    public static List<Service> parseServices(Solver solver) {
-
-        return new ArrayList<Service>();
+    public Parser(String fileName) {
+        this.propertiesURL = System.getProperty("user.dir").concat("/java/ressources/").concat(fileName);
     }
 
-    //TODO Implémenter le parser
-    public static Graph parseGraph() {
+    public List<Service> services() {
 
-        return new Graph(new ArrayList<Node>(), new ArrayList<Service>(), new int[1][1], new int[1][1]);
+        Properties prop = new Properties();
+        InputStream input = null;
+        List<Service> res = new LinkedList<>();
+
+        try {
+            input = new FileInputStream(propertiesURL);
+            prop.load(input);
+
+            System.out.println(prop.getProperty("services.number"));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return res;
+    }
+
+    public int[][] networkLatencies() {
+        return null;
+    }
+
+    public int[][] networkBandwidths() {
+        return null;
+    }
+
+    public int[] networkCpus() {
+        return null;
+    }
+
+    public int[] networkMem() {
+        return null;
+    }
+
+
+    public static void main(String[] args) {
+        Parser parser = new Parser("edge.properties");
+        System.out.println(parser.services());
+        System.out.println(parser.networkLatencies());
     }
 }
