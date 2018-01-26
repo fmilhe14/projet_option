@@ -15,10 +15,10 @@ public class Service {
     private Map<Component[], Integer> requiredLatencies;
     private Map<Component[], Integer> requiredBandwidths;
 
-    public Service(List<Component> Components, Map<Component[], Integer> requiredLatencies,
+    public Service(List<Component> components, Map<Component[], Integer> requiredLatencies,
                    Map<Component[], Integer> bandwidths) {
 
-        this.components = Components;
+        this.components = components;
         this.requiredLatencies = requiredLatencies;
         this.requiredBandwidths = bandwidths;
 

@@ -2,7 +2,6 @@ import components.*;
 import org.chocosolver.solver.Solver;
 
 import java.util.ArrayList;
-import java.util.InvalidPropertiesFormatException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -12,28 +11,23 @@ public class Main {
 
         Solver solver = new Solver("");
 
-        Parser parser = new Parser("");
+        Parser parser = new Parser(solver, "edge.properties");
 
-        try {
-            List<Service> services = parser.services();
-            int[][] networkLatencies = parser.networkLatencies();
-            int[][] networkBandwidths = parser.networkBandwidths();
-            int[] networkCpus = parser.networkCpus();
-            int[] networkMem = parser.networkMem();
-            Data data = new Data(services, networkLatencies, networkBandwidths, networkCpus, networkMem, solver);
+        List<Service> services = parser.services();
+        int[][] networkLatencies = parser.networkLatencies();
+        int[][] networkBandwidths = parser.networkBandwidths();
+        int[] networkCpus = parser.networkCpus();
+        int[] networkMem = parser.networkMem();
+        Data data = new Data(services, networkLatencies, networkBandwidths, networkCpus, networkMem, solver);
 
-            List<Node> nodes = data.buildNodes();
-            List<Edge> edges = data.buildEdges(nodes);
+        List<Node> nodes = data.buildNodes();
+        List<Edge> edges = data.buildEdges(nodes);
 
-            Graph graph = new Graph(nodes, edges);
+        Graph graph = new Graph(nodes, edges);
 
-            ArrayList<Path[]> allPaths = initiatePaths(services, graph, solver);
+        ArrayList<Path[]> allPaths = initiatePaths(services, graph, solver);
 
-            solver.findSolution();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        solver.findSolution();
     }
 
 
