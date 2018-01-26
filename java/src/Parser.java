@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.util.*;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.lang.Integer.parseInt;
 import static java.util.regex.Pattern.compile;
@@ -189,10 +188,7 @@ public class Parser {
 
 
     int[][][] buildMatrix(String s) {
-        List<Object> list = new LinkedList<>();
-
-
-        return list.toArray(new int[0][][]);
+        return null;
     }
 
 
@@ -222,7 +218,7 @@ public class Parser {
                             .map(Arrays::toString)
                             .collect(joining(", ", "[", "]")));
 
-            System.out.println(parseInt("{"));
+            System.out.println("abcdef".substring(2));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -231,18 +227,19 @@ public class Parser {
 
 }
 
-class PNode {
+class ParserNode {
     private int val;
-    private List<PNode> children;
+    private List<ParserNode> children;
 
-    public PNode(String s) {
-        Matcher matcher = compile("^-?[0-9]+").matcher(s);
-
-        if (matcher.matches()) {
-            this.val = parseInt(matcher.group(0));
-            this.children = null;
-        } else {
-
+    public ParserNode(String s) {
+        String copy = s;
+        Matcher matcher = compile("^-?[0-9]+,?+").matcher(copy);
+        boolean matches = matcher.matches();
+        while (matches) {
+            String group = matcher.group(0);
+            int groupLength = group.length();
+            copy = copy.substring(groupLength);
+            matcher = compile("^-?[0-9]+,?+").matcher(copy);
         }
     }
 }
