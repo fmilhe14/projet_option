@@ -11,7 +11,6 @@ import java.util.regex.Matcher;
 
 import static java.lang.Integer.parseInt;
 import static java.util.regex.Pattern.compile;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.IntStream.range;
 import static org.chocosolver.solver.variables.VariableFactory.bounded;
 
@@ -26,9 +25,6 @@ public class Parser {
     private List<Integer> networkTopology;
     private int nbServices;
     private int[][][] components;
-
-    private static int index = 0; // the position in the String
-
 
     public Parser(Solver solver, String fileName) {
         this.solver = solver;
@@ -178,19 +174,46 @@ public class Parser {
         if (property == null) {
             throw new InvalidKeyException("property ".concat(key).concat(" is not in ").concat(fileName));
         } else {
-            property = "{"
-                    .concat(property.replaceAll(" |([A-Za-z]+[0-9]+(-[a-z])? ?,)", ""))
-                    .concat("}");
-
-            return buildMatrix(property);
+            return buildMatrixThirdDegree(property.replaceAll(" |([A-Za-z]+[0-9]+(-[a-z])? ?,)", ""));
         }
     }
 
 
-    int[][][] buildMatrix(String s) {
-        return null;
-    }
+    private int[][][] buildMatrixThirdDegree(String s) {
+        ParserNode tree = new ParserNode(s);
 
+        int nbFirstDegree = tree.nbChildren();
+        int[][][] rep = new int[nbFirstDegree][][];
+
+        ParserNode firstDegreeChild;
+        int nbSecondDegreeChildren;
+
+        for (int i = 0; i < nbFirstDegree; i++) {
+            firstDegreeChild = tree.children.get(i);
+            nbSecondDegreeChildren = firstDegreeChild.nbChildren();
+
+            int[][] secondDegree = new int[nbSecondDegreeChildren][];
+
+            ParserNode secondDegreeChild;
+            int nbThirdDegreeChildren;
+
+            for (int j = 0; j < nbSecondDegreeChildren; j++) {
+                secondDegreeChild = firstDegreeChild.children.get(j);
+                nbThirdDegreeChildren = secondDegreeChild.nbChildren();
+
+                int[] thirdDegree = new int[nbThirdDegreeChildren];
+
+                for (int k = 0; k < nbThirdDegreeChildren; k++) {
+                    thirdDegree[k] = secondDegreeChild.children.get(k).val;
+                }
+
+                secondDegree[j] = thirdDegree;
+            }
+
+            rep[i] = secondDegree;
+        }
+        return rep;
+    }
 
 
 
@@ -203,23 +226,22 @@ public class Parser {
     public static void main(String[] args) {
         try {
             Parser parser = new Parser(null, "edge.properties");
-
-            System.out.println(Arrays.toString(parser.networkMem()));
-
-            System.out.println(Arrays.toString(parser.networkCpus()));
-
-            System.out.println(
-                    Arrays.stream(parser.networkBandwidths())
-                            .map(Arrays::toString)
-                            .collect(joining(", ", "[", "]")));
-
-            System.out.println(
-                    Arrays.stream(parser.networkLatencies())
-                            .map(Arrays::toString)
-                            .collect(joining(", ", "[", "]")));
-
-            System.out.println("abcdef".substring(2));
-
+//
+//            System.out.println(Arrays.toString(parser.networkMem()));
+//
+//            System.out.println(Arrays.toString(parser.networkCpus()));
+//
+//            System.out.println(
+//                    Arrays.stream(parser.networkBandwidths())
+//                            .map(Arrays::toString)
+//                            .collect(joining(", ", "[", "]")));
+//
+//            System.out.println(
+//                    Arrays.stream(parser.networkLatencies())
+//                            .map(Arrays::toString)
+//                            .collect(joining(", ", "[", "]")));
+//
+            System.out.println(parser.services());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -228,18 +250,60 @@ public class Parser {
 }
 
 class ParserNode {
-    private int val;
-    private List<ParserNode> children;
+    private String prop;
+    List<ParserNode> children;
+    int val;
+
+    public ParserNode(int val) {
+        this.val = val;
+    }
 
     public ParserNode(String s) {
-        String copy = s;
-        Matcher matcher = compile("^-?[0-9]+,?+").matcher(copy);
-        boolean matches = matcher.matches();
-        while (matches) {
-            String group = matcher.group(0);
-            int groupLength = group.length();
-            copy = copy.substring(groupLength);
-            matcher = compile("^-?[0-9]+,?+").matcher(copy);
+        this.prop = s;
+        this.children = new LinkedList<>();
+
+        if (prop.charAt(0) == '{') {
+            int nbOpen = 1;
+            int ind = 1;
+            char c;
+
+            while (prop.length() != 0) {
+                while (nbOpen != 0) {
+                    c = prop.charAt(ind);
+
+                    if (c == '{') {
+                        nbOpen++;
+                    } else if (c == '}') {
+                        nbOpen--;
+                    }
+                    ind++;
+                }
+
+                this.children.add(new ParserNode(prop.substring(1, ind - 1)));
+                prop = prop.substring(ind);
+
+                if (prop.length() != 0) {
+                    if (prop.charAt(0) == ',') {
+                        prop = prop.substring(1);
+                    }
+
+                    if (prop.charAt(0) == '{') {
+                        ind = 1;
+                        nbOpen = 1;
+                    }
+                }
+            }
+
+        } else {
+            Matcher matcher = compile("-?[0-9]+").matcher(prop);
+            while (matcher.find()) {
+                children.add(new ParserNode(parseInt(matcher.group())));
+            }
+            prop = "";
         }
+    }
+
+    public int nbChildren() {
+        return children.size();
     }
 }
