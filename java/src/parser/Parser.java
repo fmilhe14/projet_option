@@ -1,3 +1,5 @@
+package parser;
+
 import components.Component;
 import components.Service;
 import org.chocosolver.solver.Solver;
@@ -25,6 +27,7 @@ public class Parser {
     private List<Integer> networkTopology;
     private int nbServices;
     private int[][][] components;
+    private int[][][][] servicesTopologies;
 
     public Parser(Solver solver, String fileName) {
         this.solver = solver;
@@ -44,7 +47,8 @@ public class Parser {
             networkTopology = collectIntValues("network.topology");
 
             nbServices = parseInt(getProperty("services.number"));
-            components = collectIntInArrays("services.components");
+            components = collectIntInArraysThirdDegree("services.components");
+            servicesTopologies = collectIntInArrayFourthDegree("services.topologies");
 
             if (nodeModels.size() != nbNodes) {
                 throw new InvalidPropertiesFormatException("Number of models in host.hostmodelpersite differs from sites.number");
@@ -52,6 +56,8 @@ public class Parser {
                 throw new InvalidPropertiesFormatException("Matrix given in network.topology has the wrong size");
             } else if (components.length != nbServices) {
                 throw new InvalidPropertiesFormatException("Matrix given in services.components has the wrong size");
+            } else if (servicesTopologies.length != nbServices) {
+                throw new InvalidPropertiesFormatException("Matrix given in services.topologies has the wrong size");
             }
 
         } catch (Exception e) {
@@ -74,36 +80,57 @@ public class Parser {
     public List<Service> services() {
         List<Service> rep = new ArrayList<>();
 
-        int nbServices = this.components.length;
+        int nbServices = components.length;
         int[][] service;
+        int[][][] serviceTopo;
 
         for (int i = 0; i < nbServices; i++) {
-            service = this.components[i];
+            service = components[i];
 
-            List<Component> components = new ArrayList<>();
+            List<Component> components = makeComponentsList(i*nbServices, service);
+
             Map<Component[], Integer> latencies = new HashMap<>();
             Map<Component[], Integer> bandwidths = new HashMap<>();
 
-            int[] component;
-            int id;
-            String variableName;
+            serviceTopo = servicesTopologies[i];
+            Component[] pair;
+            int[] pairRequirements;
 
-            for (int j=0; j<service.length; j++) {
-                component = service[j];
-                id = i * nbServices + j;
-                variableName = "position_component_" + id;
-
-                if (component.length == 1) {
-                    components.add(new Component(id, 0, 0,
-                            bounded(variableName, component[0], component[0], solver)));
-                } else {
-                    components.add(new Component(id, component[0], component[1],
-                            bounded(variableName, 0, nbNodes, solver)));
+            for (int j = 0; j < service.length; j++) {
+                for (int k = j + 1; k < service.length; k++) {
+                    pair = new Component[]{components.get(j), components.get(k)};
+                    pairRequirements = serviceTopo[j][k];
+                    latencies.put(pair, pairRequirements[2]);
+                    bandwidths.put(pair, pairRequirements[1]);
                 }
             }
 
             rep.add(new Service(components, latencies, bandwidths));
         }
+        return rep;
+    }
+
+    private List<Component> makeComponentsList(int idBase, int[][] service) {
+
+        List<Component> rep = new LinkedList<>();
+        int[] component;
+        int id;
+        String variableName;
+
+        for (int j = 0; j < service.length; j++) {
+            component = service[j];
+            id = idBase + j;
+            variableName = "position_component_" + id;
+
+            if (component.length == 1) {
+                rep.add(new Component(id, 0, 0,
+                        bounded(variableName, component[0], component[0], solver)));
+            } else {
+                rep.add(new Component(id, component[0], component[1],
+                        bounded(variableName, 0, nbNodes, solver)));
+            }
+        }
+
         return rep;
     }
 
@@ -145,6 +172,7 @@ public class Parser {
 
     /**
      * Ex: Call this with modelValueIndex = 2 to get the array of RAM per node in the model.
+     *
      * @param modelValueIndex the index in which, for each model in host.models, the required value is stored.
      * @return an array containing the value of the required property for each node.
      */
@@ -168,64 +196,49 @@ public class Parser {
                 ).toArray(int[][]::new);
     }
 
-    private int[][][] collectIntInArrays(String key) throws InvalidKeyException {
+    private int[][][] collectIntInArraysThirdDegree(String key) throws InvalidKeyException {
         String property = getProperty(key);
 
         if (property == null) {
             throw new InvalidKeyException("property ".concat(key).concat(" is not in ").concat(fileName));
         } else {
-            return buildMatrixThirdDegree(property.replaceAll(" |([A-Za-z]+[0-9]+(-[a-z])? ?,)", ""));
+            ParserNode tree = new ParserNode(property.replaceAll(" |([A-Za-z]+[0-9]+(-[a-z])? ?,)", ""));
+            return buildMatrixThirdDegree(tree);
         }
     }
 
 
-    private int[][][] buildMatrixThirdDegree(String s) {
-        ParserNode tree = new ParserNode(s);
-
-        int nbFirstDegree = tree.nbChildren();
-        int[][][] rep = new int[nbFirstDegree][][];
-
-        ParserNode firstDegreeChild;
-        int nbSecondDegreeChildren;
-
-        for (int i = 0; i < nbFirstDegree; i++) {
-            firstDegreeChild = tree.children.get(i);
-            nbSecondDegreeChildren = firstDegreeChild.nbChildren();
-
-            int[][] secondDegree = new int[nbSecondDegreeChildren][];
-
-            ParserNode secondDegreeChild;
-            int nbThirdDegreeChildren;
-
-            for (int j = 0; j < nbSecondDegreeChildren; j++) {
-                secondDegreeChild = firstDegreeChild.children.get(j);
-                nbThirdDegreeChildren = secondDegreeChild.nbChildren();
-
-                int[] thirdDegree = new int[nbThirdDegreeChildren];
-
-                for (int k = 0; k < nbThirdDegreeChildren; k++) {
-                    thirdDegree[k] = secondDegreeChild.children.get(k).val;
-                }
-
-                secondDegree[j] = thirdDegree;
-            }
-
-            rep[i] = secondDegree;
-        }
-        return rep;
+    private int[][][] buildMatrixThirdDegree(ParserNode tree) {
+        return tree.streamChildren()
+                .map(child -> child.streamChildren()
+                        .map(child2 -> child2.streamChildren()
+                                .mapToInt(ParserNode::getVal)
+                                .toArray()
+                        ).toArray(int[][]::new)
+                ).toArray(int[][][]::new);
     }
 
+    private int[][][][] collectIntInArrayFourthDegree(String key) throws InvalidKeyException {
+        String property = getProperty(key);
 
+        if (property == null) {
+            throw new InvalidKeyException("property ".concat(key).concat(" is not in ").concat(fileName));
+        } else {
+            ParserNode tree = new ParserNode(property.replaceAll(" |([A-Za-z]+[0-9]+(-[a-z])? ?,)", ""));
+            return buildMatrixFourthDegree(tree);
+        }
+    }
 
-
-
-
-
+    private int[][][][] buildMatrixFourthDegree(ParserNode tree) {
+        return tree.streamChildren()
+                .map(this::buildMatrixThirdDegree)
+                .toArray(int[][][][]::new);
+    }
 
 
     public static void main(String[] args) {
         try {
-            Parser parser = new Parser(null, "edge.properties");
+            Parser parser = new Parser(new Solver(), "edge.properties");
 //
 //            System.out.println(Arrays.toString(parser.networkMem()));
 //
@@ -241,69 +254,12 @@ public class Parser {
 //                            .map(Arrays::toString)
 //                            .collect(joining(", ", "[", "]")));
 //
-            System.out.println(parser.services());
+            parser.services().forEach(s -> s.getComponents().forEach(System.out::println));
+            System.out.println(Arrays.deepToString(parser.collectIntInArrayFourthDegree("services.topologies")));
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-}
-
-class ParserNode {
-    private String prop;
-    List<ParserNode> children;
-    int val;
-
-    public ParserNode(int val) {
-        this.val = val;
-    }
-
-    public ParserNode(String s) {
-        this.prop = s;
-        this.children = new LinkedList<>();
-
-        if (prop.charAt(0) == '{') {
-            int nbOpen = 1;
-            int ind = 1;
-            char c;
-
-            while (prop.length() != 0) {
-                while (nbOpen != 0) {
-                    c = prop.charAt(ind);
-
-                    if (c == '{') {
-                        nbOpen++;
-                    } else if (c == '}') {
-                        nbOpen--;
-                    }
-                    ind++;
-                }
-
-                this.children.add(new ParserNode(prop.substring(1, ind - 1)));
-                prop = prop.substring(ind);
-
-                if (prop.length() != 0) {
-                    if (prop.charAt(0) == ',') {
-                        prop = prop.substring(1);
-                    }
-
-                    if (prop.charAt(0) == '{') {
-                        ind = 1;
-                        nbOpen = 1;
-                    }
-                }
-            }
-
-        } else {
-            Matcher matcher = compile("-?[0-9]+").matcher(prop);
-            while (matcher.find()) {
-                children.add(new ParserNode(parseInt(matcher.group())));
-            }
-            prop = "";
-        }
-    }
-
-    public int nbChildren() {
-        return children.size();
-    }
 }

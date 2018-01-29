@@ -1,5 +1,6 @@
 import components.*;
 import org.chocosolver.solver.Solver;
+import parser.Parser;
 
 import java.util.ArrayList;
 import java.util.Iterator;

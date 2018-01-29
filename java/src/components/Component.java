@@ -21,4 +21,9 @@ public class Component {
         this.mem = mem;
         this.position = position;
     }
+
+    @Override
+    public String toString() {
+        return "Component n°" + id + "(" + cpu + ", " + mem + ")";
+    }
 }

@@ -23,5 +23,4 @@ public class Service {
         this.requiredBandwidths = bandwidths;
 
     }
-
 }
