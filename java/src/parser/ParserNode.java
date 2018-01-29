@@ -26,47 +26,47 @@ class ParserNode {
         this.children = new LinkedList<>();
 
         if (prop.charAt(0) == '{') {
-            int nbOpen = 1;
-            int ind = 1;
-            char c;
-
             while (prop.length() != 0) {
-                while (nbOpen != 0) {
-                    c = prop.charAt(ind);
-
-                    if (c == '{') {
-                        nbOpen++;
-                    } else if (c == '}') {
-                        nbOpen--;
-                    }
-                    ind++;
-                }
-
-                this.children.add(new ParserNode(prop.substring(1, ind - 1)));
-                prop = prop.substring(ind);
-
-                if (prop.length() != 0) {
-                    if (prop.charAt(0) == ',') {
-                        prop = prop.substring(1);
-                    }
-
-                    if (prop.charAt(0) == '{') {
-                        ind = 1;
-                        nbOpen = 1;
-                    }
-                }
+                consumeOneArray();
+                removeComas();
             }
 
         } else {
             Matcher matcher = compile("-?[0-9]+").matcher(prop);
-            while (matcher.find())
-                children.add(new ParserNode(parseInt(matcher.group())));
-
+            while (matcher.find()) children.add(new ParserNode(parseInt(matcher.group())));
             prop = "";
         }
     }
 
     public Stream<ParserNode> streamChildren() {
         return getChildren().stream();
+    }
+
+    private void consumeOneArray() {
+        int nbOpen = 1;
+        int ind = 1;
+        char c;
+
+        while (nbOpen != 0) {
+            c = prop.charAt(ind);
+
+            if (c == '{') {
+                nbOpen++;
+            } else if (c == '}') {
+                nbOpen--;
+            }
+            ind++;
+        }
+
+        this.children.add(new ParserNode(prop.substring(1, ind - 1)));
+        prop = prop.substring(ind);
+    }
+
+    private void removeComas() {
+        if (prop.length() != 0) {
+            if (prop.charAt(0) == ',') {
+                prop = prop.substring(1);
+            }
+        }
     }
 }
