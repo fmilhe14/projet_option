@@ -28,7 +28,7 @@ public class Path {
     private Solver solver;
 
     private IntVar[] successeur;
-    private IntVar[] arcssucc;
+    private IntVar[] arcsPossibleSuccesseur;
     private SetVar noeudsVisites;
     private SetVar arcsVisites;
 
@@ -42,21 +42,23 @@ public class Path {
         this.graph = graph;
 
         int nbNodes = this.getGraph().getNodes().size();
-        int nbArc = this.getGraph().getEdges().size();
+        int nbArcs = this.getGraph().getEdges().size();
 
         this.successeur = VariableFactory.boundedArray("successeur", nbNodes + 1, 0, nbNodes, getSolver());
-        this.arcssucc = new IntVar[nbNodes +1]; //Pas sûr de la taille
+        this.arcsPossibleSuccesseur = new IntVar[nbNodes + 1];
 
-        for(int i = 0; i <successeur.length; i++){
+        for(int i = 1; i <successeur.length; i++){
 
-            int[] potsuccs = convertIntegers(findPotentialSucc(i));
-            int[] potarcs = convertIntegers(findPotentialArcs(i));
+            int[] potsuccs = convertIntegers(findPotentialSucc(i-1));
+            int[] potarcs = convertIntegers(findPotentialArcs(i-1));
 
-            IntVar indsucc = VariableFactory.integer("indsucc_"+i, 0, potsuccs.length, solver);
-            arcssucc[i] = VariableFactory.integer("arcsucc_"+i, 0, nbArc, solver);
+            IntVar indiceSuccesseurs = VariableFactory.integer("indsucc_"+i, 0, potsuccs.length, solver);
+            arcsPossibleSuccesseur[i] = VariableFactory.integer("arcsucc_"+i, 0, nbArcs, solver);
 
-            IntConstraintFactory.element(successeur[i], potsuccs, indsucc);
-            IntConstraintFactory.element(arcssucc[i], potarcs, indsucc);
+            //Je crois qu'il faut créer des arcs qui vont du noeud à lui même
+
+            solver.post(IntConstraintFactory.element(successeur[i], potsuccs, indiceSuccesseurs));
+            solver.post(IntConstraintFactory.element(arcsPossibleSuccesseur[i], potarcs, indiceSuccesseurs));
         }
 
 
@@ -67,9 +69,9 @@ public class Path {
 
         this.noeudsVisites = VariableFactory.set("noeudsVisites", enveloppe1, new int[]{}, this.getSolver());
 
-        int[] enveloppe2 = new int[nbArc];
+        int[] enveloppe2 = new int[nbArcs];
 
-        for (int i = 0; i < nbArc; i++) {
+        for (int i = 0; i < nbArcs; i++) {
             enveloppe2[i] = i;
         }
 
@@ -78,11 +80,11 @@ public class Path {
         //Contraintes ALL DIFFERENT sur tous les successeurs : on ne repasse pas par un noeud
         solver.post(IntConstraintFactory.alldifferent(this.getSuccesseur()));
 
-        //La liste successeur comment par le premier composant
+
         solver.post(IntConstraintFactory.arithm(successeur[0], "=", component1.getPosition()));
 
         //Le dernier composant boucle sur l'indice 0
-  //      solver.post(IntConstraintFactory.arithm(successeur[component2.getPosition().getValue()], "=", 0)); //ToDO je suis pas sûr que ce soit bon
+  //      solver.post(IntConstraintFactory.arithm(successeur[component2.getPosition().getValue()], "=", 0)); //Pas besoin de le mettre avec le all diff ?
 
         successeurArcsConstraints();
 
@@ -100,9 +102,11 @@ public class Path {
 
         for (int i = 0; i < n; i++) {
 
-            Constraint different = IntConstraintFactory.arithm(this.successeur[i], "!=", VariableFactory.bounded("", i, i, solver));
-            Constraint differentOf0 = IntConstraintFactory.arithm(this.successeur[i], "!=", VariableFactory.bounded("", 0, 0, solver));
+            Constraint different = IntConstraintFactory.arithm(this.successeur[i], "!=", i);
+            Constraint differentOf0 = IntConstraintFactory.arithm(this.successeur[i], "!=", 0);
+
             Constraint contient = SetConstraintsFactory.member(this.getSuccesseur()[i], this.getNoeudsVisites());
+
             ifOnlyIf(different.reif(), contient.reif());
             ifOnlyIf(differentOf0.reif(), contient.reif());
 
@@ -114,10 +118,10 @@ public class Path {
 
         int n = this.getSuccesseur().length;
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 1; i < n; i++) {
 
             Constraint different = IntConstraintFactory.arithm(this.successeur[i], "!=", i);
-            Constraint contient = SetConstraintsFactory.member(this.arcssucc[i], this.arcsVisites);
+            Constraint contient = SetConstraintsFactory.member(this.arcsPossibleSuccesseur[i], this.arcsVisites);
 
             ifOnlyIf(different.reif(), contient.reif());
         }
@@ -129,9 +133,7 @@ public class Path {
 
         int[] latenciesEdges = new int[this.getGraph().getEdges().size()];
 
-        for (int i = 0; i < this.getGraph().getEdges().size(); i++)
-
-            latenciesEdges[i] = this.getGraph().getEdges().get(i).getLatency();
+        for (int i = 0; i < this.getGraph().getEdges().size(); i++) latenciesEdges[i] = this.getGraph().getEdges().get(i).getLatency();
 
         solver.post(SetConstraintsFactory.sum(this.getArcsVisites(), latenciesEdges
                 , 0, VariableFactory.bounded("", this.requiredLatency, this.requiredLatency, solver), true));
@@ -150,41 +152,42 @@ public class Path {
         return map;
     }
 
-    public int[] convertIntegers(List<Integer> integers)
+    public int[] convertIntegers(Set<Integer> integers)
     {
-        int[] ret = new int[integers.size()];
-        for (int i=0; i < ret.length; i++)
-        {
-            ret[i] = integers.get(i).intValue();
+        int[] ints = new int[integers.size()];
+        int index = 0;
+        for(Integer i : integers){
+            ints[index++] = i;
         }
-        return ret;
+
+        return ints;
     }
 
-    public ArrayList<Integer> findPotentialSucc(int i){
+    public Set<Integer> findPotentialSucc(int i){
 
-        ArrayList<Integer> potentialSuccesseur = new ArrayList<>();
+        Set<Integer> potentialSuccesseur = new HashSet<>();
 
         for(int j = 0; j<graph.getEdges().size(); j++){
 
             Node node1 = graph.getEdges().get(j).getNode1();
+            Node node2 = graph.getEdges().get(j).getNode2();
 
             if(node1.getId() == i) {
-                potentialSuccesseur.add(node1.getId());
+                potentialSuccesseur.add(node2.getId());
             }
 
-            Node node2 = graph.getEdges().get(j).getNode1();
 
             if(node2.getId() == i){
-                potentialSuccesseur.add(node2.getId());
+                potentialSuccesseur.add(node1.getId());
             }
         }
 
         return potentialSuccesseur;
     }
 
-    public ArrayList<Integer> findPotentialArcs(int i){
+    public Set<Integer> findPotentialArcs(int i){
 
-        ArrayList<Integer> res = new ArrayList<>();
+        Set<Integer> res = new HashSet<>();
 
         Map<PairOfIndex, Integer> map = getEdgeIds(graph.getEdges());
         Iterator<PairOfIndex> pairs = map.keySet().iterator();
@@ -193,10 +196,9 @@ public class Path {
 
             PairOfIndex pairOfIndex = pairs.next();
 
-            if(pairOfIndex.contains(i)) res.add(i) ;
+            if(pairOfIndex.contains(i)) res.add(map.get(pairOfIndex)) ;
         }
 
         return  res;
     }
-
 }

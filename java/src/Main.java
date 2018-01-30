@@ -1,6 +1,8 @@
 import components.*;
 import org.chocosolver.solver.Solver;
+import org.chocosolver.solver.constraints.IntConstraintFactory;
 import org.chocosolver.solver.trace.Chatterbox;
+import org.chocosolver.solver.variables.VariableFactory;
 import parser.Parser;
 
 import java.util.ArrayList;
@@ -30,8 +32,9 @@ public class Main {
 
         ArrayList<Path[]> allPaths = initiatePaths(services, graph, solver);
 
-        solver.findSolution();
 
+      //  Chatterbox.showSolutions(solver);
+        solver.findSolution();
         Chatterbox.printStatistics(solver);
 
     }
@@ -68,4 +71,5 @@ public class Main {
 
         return allPaths;
     }
+
 }

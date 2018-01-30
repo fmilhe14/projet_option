@@ -45,10 +45,10 @@ public class Edge {
         this.bandwidth = data.getNetworkBandwidths()[node1.getId()][node2.getId()];
         this.latency = data.getNetworkLatencies()[node1.getId()][node2.getId()];
 
-        this.bandwidthConso = VariableFactory.bounded("bandePassanteConsommée", 0, this.getBandwidth(),
+        this.bandwidthConso = VariableFactory.bounded("bandePassanteConsommée sur l'arc "+id, 0, this.getBandwidth(),
                 data.getSolver());
 
-        this.coupleComposantSurArc = VariableFactory.set("coupleComposantSurArc", enveloppe, new int[]{},
+        this.coupleComposantSurArc = VariableFactory.set("couple de composants sur l'arc "+id, enveloppe, new int[]{},
                 data.getSolver());
 
         this.coherenceconstraints();

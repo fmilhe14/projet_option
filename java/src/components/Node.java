@@ -20,7 +20,7 @@ public class Node {
 
     private Data data;
 
-    private SetVar CompSurNoeud;
+    private SetVar compSurNoeud;
     private IntVar cpuConso;
     private IntVar memConso;
 
@@ -39,9 +39,9 @@ public class Node {
         this.cpu = data.getNetworkCpus()[id];
         this.mem = data.getNetworkMem()[id];
 
-        this.cpuConso = VariableFactory.bounded("cpuconsomé", 0, this.cpu, data.getSolver());
-        this.memConso = VariableFactory.bounded("memconsomé", 0, this.mem, data.getSolver());
-        this.CompSurNoeud = VariableFactory.set("ComposantSurLeNoeud", enveloppe, new int[]{}, data.getSolver());
+        this.cpuConso = VariableFactory.bounded("CPU consommés sur le noeud "+id, 0, this.cpu, data.getSolver());
+        this.memConso = VariableFactory.bounded("Mémoire consommée sur le noeud "+id, 0, this.mem, data.getSolver());
+        this.compSurNoeud = VariableFactory.set("Composants Sur Le Noeud "+id, enveloppe, new int[]{}, data.getSolver());
 
         this.coherenceconstraints();
     }
@@ -50,13 +50,12 @@ public class Node {
 
         // contrainte qui fait le lien entre le liste des composants et le cpu consommé sur le noeud
         data.getSolver().post(SetConstraintsFactory.sum(this.getCompSurNoeud(), this.data.getComponentsRequiredCpu()
-                , 0, this.getCpuConso(), true));
+                , 0, this.getCpuConso(), false));
 
         // idem avec la mémoire
-        data.getSolver().post(SetConstraintsFactory.sum(this.getCompSurNoeud(), this.getData().getComponentsRequiredmem()
-                , 0, this.getMemConso(), true));
+        data.getSolver().post(SetConstraintsFactory.sum(this.getCompSurNoeud(), this.data.getComponentsRequiredmem()
+                , 0, this.getMemConso(), false));
 
-        // les contraites vérifiant "ressourceConso"<="ressourceDispo" sont comprises dans la définition des variables "ressourceConso"
 
     }
 }
