@@ -1,8 +1,10 @@
 import components.*;
 import org.chocosolver.solver.Solver;
+import org.chocosolver.solver.trace.Chatterbox;
 import parser.Parser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -29,6 +31,9 @@ public class Main {
         ArrayList<Path[]> allPaths = initiatePaths(services, graph, solver);
 
         solver.findSolution();
+
+        Chatterbox.printStatistics(solver);
+
     }
 
 
@@ -38,25 +43,23 @@ public class Main {
 
         for(Service s: services) {
 
-            Iterator<Component[]> pairsOfComponents = s.getRequiredLatencies().keySet().iterator();
+            Iterator<PairOfComponents> pairsOfComponents = s.getRequiredLatencies().keySet().iterator();
 
-            ArrayList<Component[]> effectivePairs = new ArrayList<>();
+            ArrayList<PairOfComponents> effectivePairOfComponents = new ArrayList<>();
 
             while (pairsOfComponents.hasNext()) {
 
-                Component[] pair = pairsOfComponents.next();
-                if (s.getRequiredLatencies().get(pair) != -1) effectivePairs.add(pair);
+                PairOfComponents pairOfComponents = pairsOfComponents.next();
+
+                if (s.getRequiredLatencies().get(pairOfComponents) != -1) effectivePairOfComponents.add(pairOfComponents);
             }
 
-            Path[] paths = new Path[effectivePairs.size()];
+            Path[] paths = new Path[effectivePairOfComponents.size()];
 
             int i = 0;
-            for (Component[] pair : effectivePairs) {
+            for (PairOfComponents pairOfComponents : effectivePairOfComponents) {
 
-                int indiceComponent1 = pair[0].getId();
-                int indiceComponent2 = pair[1].getId();
-
-                paths[i] = new Path(graph, indiceComponent1, indiceComponent2, s.getRequiredLatencies().get(pair), solver);
+                paths[i] = new Path(graph, pairOfComponents.getComponent1(), pairOfComponents.getComponent2(), s.getRequiredLatencies().get(pairOfComponents), solver);
                 i++;
             }
 

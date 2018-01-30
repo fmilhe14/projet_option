@@ -1,6 +1,7 @@
 package parser;
 
 import components.Component;
+import components.PairOfComponents;
 import components.Service;
 import org.chocosolver.solver.Solver;
 
@@ -92,29 +93,34 @@ public class Parser {
     }
 
     public List<Service> services() {
+
         List<Service> rep = new ArrayList<>();
 
         int[][] service;
 
+        int id = 0;
+
         for (int i = 0; i < nbServices; i++) {
             service = components[i];
 
-            List<Component> components = makeComponentsList(i*nbServices, service);
+            List<Component> components = makeComponentsList(id, service);
 
-            Map<Component[], Integer> latencies = new HashMap<>();
-            Map<Component[], Integer> bandwidths = new HashMap<>();
+            id += components.size();
 
-            Component[] pair;
+            Map<PairOfComponents, Integer> latencies = new HashMap<>();
+            Map<PairOfComponents, Integer> bandwidths = new HashMap<>();
+
+            PairOfComponents pairOfComponents;
             int[] pairRequirements;
 
             for (int j = 0; j < service.length; j++) {
                 for (int k = j + 1; k < service.length; k++) {
 
-                    pair = new Component[]{components.get(j), components.get(k)};
+                    pairOfComponents = new PairOfComponents(components.get(j), components.get(k));
                     pairRequirements = servicesTopologies[i][j][k];
 
-                    bandwidths.put(pair, pairRequirements[1]);
-                    latencies.put(pair, pairRequirements[2]);
+                    bandwidths.put(pairOfComponents, pairRequirements[1]);
+                    latencies.put(pairOfComponents, pairRequirements[2]);
                 }
             }
 

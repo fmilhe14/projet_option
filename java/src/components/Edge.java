@@ -27,7 +27,6 @@ public class Edge {
 
         this.data = data;
 
-
         this.node1 = node1;
         this.node2 = node2;
 

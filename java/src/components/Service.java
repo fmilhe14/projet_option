@@ -12,11 +12,11 @@ public class Service {
 
     private List<Component> components;
     private Path[] path;
-    private Map<Component[], Integer> requiredLatencies;
-    private Map<Component[], Integer> requiredBandwidths;
+    private Map<PairOfComponents, Integer> requiredLatencies;
+    private Map<PairOfComponents, Integer> requiredBandwidths;
 
-    public Service(List<Component> components, Map<Component[], Integer> requiredLatencies,
-                   Map<Component[], Integer> bandwidths) {
+    public Service(List<Component> components, Map<PairOfComponents, Integer> requiredLatencies,
+                   Map<PairOfComponents, Integer> bandwidths) {
 
         this.components = components;
         this.requiredLatencies = requiredLatencies;

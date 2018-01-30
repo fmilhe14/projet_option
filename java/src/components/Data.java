@@ -109,10 +109,10 @@ public class Data {
 
                     Component c1 = s.getComponents().get(j);
 
-                    Component[] pair = new Component[]{c, c1};
+                    PairOfComponents pairOfComponents = new PairOfComponents(c, c1);
 
-                    bandwidths = s.getRequiredBandwidths().get(pair);
-                    latency = s.getRequiredLatencies().get(pair);
+                    bandwidths = s.getRequiredBandwidths().get(pairOfComponents);
+                    latency = s.getRequiredLatencies().get(pairOfComponents);
 
                     if (bandwidths != 0) {
 
@@ -125,6 +125,7 @@ public class Data {
 
         int nbCouple = coupleComponentsRequiredBandwidth.size();
         this.coupleComponentsRequiredBandwidth = new int[nbCouple];
+        this.coupleComponentsRequiredLatency = new int[nbCouple];
 
         for (int i = 0; i < nbCouple; i++) {
 
@@ -158,10 +159,10 @@ public class Data {
         for (int i = 0; i < networkLatencies.length; i++) {
             for (int j = i + 1; j < networkLatencies.length; j++) {
 
-                if (networkLatencies[i][j] != Integer.MAX_VALUE) {
+                if (networkLatencies[i][j] != 0) {
 
                     edges.add(new Edge(edgeId, nodes.get(i), nodes.get(j), this));
-
+                    edgeId ++ ;
                 }
             }
         }
