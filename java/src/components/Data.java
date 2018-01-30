@@ -41,7 +41,6 @@ public class Data {
         this.networkBandwidths = networkBandwidths;
         this.networkCpus = networkCpus;
         this.networkMem = networkMem;
-        this.networkBandwidths = getNetworkLatencies();
 
         this.componentsRequiredCpu = componentsRequiredCpuFactory(this.components);
         this.componentsRequiredmem = componentsRequiredMemFactory(this.components);
