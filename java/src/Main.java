@@ -30,17 +30,17 @@ public class Main {
 
         Graph graph = new Graph(nodes, edges);
 
-        ArrayList<Path[]> allPaths = initiatePaths(services, graph, solver);
+        initiatePaths(services, graph, solver);
 
-
-      //  Chatterbox.showSolutions(solver);
+        Chatterbox.showSolutions(solver);
         solver.findSolution();
+        solver.getVars();
         Chatterbox.printStatistics(solver);
 
     }
 
 
-    private static ArrayList<Path[]> initiatePaths(List<Service> services, Graph graph, Solver solver) {
+    private static void initiatePaths(List<Service> services, Graph graph, Solver solver) {
 
         ArrayList<Path[]> allPaths = new ArrayList<>();
 
@@ -60,16 +60,23 @@ public class Main {
             Path[] paths = new Path[effectivePairOfComponents.size()];
 
             int i = 0;
+
             for (PairOfComponents pairOfComponents : effectivePairOfComponents) {
 
-                paths[i] = new Path(graph, pairOfComponents.getComponent1(), pairOfComponents.getComponent2(), s.getRequiredLatencies().get(pairOfComponents), solver);
+                Component component1 = pairOfComponents.getComponent1();
+                Component component2 = pairOfComponents.getComponent2();
+
+                if(pairOfComponents.getComponent1().getPosition().getDomainSize()!=1) {
+                    component1 = pairOfComponents.getComponent2();
+                    component2 = pairOfComponents.getComponent1();
+                }
+
+                paths[i] = new Path(graph, component1,component2, s.getRequiredLatencies().get(pairOfComponents), solver, i);
                 i++;
             }
 
             allPaths.add(paths);
         }
-
-        return allPaths;
-    }
+        }
 
 }

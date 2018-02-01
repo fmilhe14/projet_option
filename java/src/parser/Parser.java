@@ -164,7 +164,7 @@ public class Parser {
             if (component.length == 1) {
                 rep.add(new Component(id, 0, 0, bounded(variableName, component[0], component[0], solver)));
             } else {
-                rep.add(new Component(id, component[0], component[1], bounded(variableName, 0, nbNodes, solver)));
+                rep.add(new Component(id, component[0], component[1], bounded(variableName, 1, nbNodes, solver)));
             }
         }
 

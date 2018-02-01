@@ -50,7 +50,6 @@ public class Data {
 
     }
 
-    //Methode pour récupérer tous les
     private List<Component> composantFactory(List<Service> services) {
 
         this.components = new ArrayList<>();
@@ -154,10 +153,16 @@ public class Data {
 
         ArrayList<Edge> edges = new ArrayList<>();
 
-        int edgeId = 0;
+        int edgeId = 1;
 
         for (int i = 0; i < networkLatencies.length; i++) {
-            for (int j = i + 1; j < networkLatencies.length; j++) {
+            for (int j = i ; j < networkLatencies.length; j++) {
+
+                if(i == j){
+
+                    edges.add(new Edge(edgeId, nodes.get(i), nodes.get(j), this));
+                    edgeId ++;
+                }
 
                 if (networkLatencies[i][j] != 0) {
 
@@ -166,6 +171,7 @@ public class Data {
                 }
             }
         }
+
         return edges;
     }
 

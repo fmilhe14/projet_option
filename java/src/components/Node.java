@@ -1,5 +1,6 @@
 package components;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.chocosolver.solver.constraints.set.SetConstraintsFactory;
@@ -12,6 +13,7 @@ import org.chocosolver.solver.variables.VariableFactory;
  */
 @Getter
 @Setter
+@EqualsAndHashCode
 public class Node {
 
     private int id;
@@ -21,12 +23,13 @@ public class Node {
     private Data data;
 
     private SetVar compSurNoeud;
+
     private IntVar cpuConso;
     private IntVar memConso;
 
     public Node(int id, Data data) {
 
-        this.id = id;
+        this.id = id + 1;
 
         int nbComponent = data.getComponents().size();
         int[] enveloppe = new int[nbComponent];
@@ -39,9 +42,9 @@ public class Node {
         this.cpu = data.getNetworkCpus()[id];
         this.mem = data.getNetworkMem()[id];
 
-        this.cpuConso = VariableFactory.bounded("CPU consommés sur le noeud "+id, 0, this.cpu, data.getSolver());
-        this.memConso = VariableFactory.bounded("Mémoire consommée sur le noeud "+id, 0, this.mem, data.getSolver());
-        this.compSurNoeud = VariableFactory.set("Composants Sur Le Noeud "+id, enveloppe, new int[]{}, data.getSolver());
+        this.cpuConso = VariableFactory.bounded("CPU consommés sur le noeud "+this.id, 0, this.cpu, data.getSolver());
+        this.memConso = VariableFactory.bounded("Mémoire consommée sur le noeud "+this.id, 0, this.mem, data.getSolver());
+        this.compSurNoeud = VariableFactory.set("Composants Sur Le Noeud "+this.id, enveloppe, new int[]{}, data.getSolver());
 
         this.coherenceconstraints();
     }
@@ -50,11 +53,11 @@ public class Node {
 
         // contrainte qui fait le lien entre le liste des composants et le cpu consommé sur le noeud
         data.getSolver().post(SetConstraintsFactory.sum(this.getCompSurNoeud(), this.data.getComponentsRequiredCpu()
-                , 0, this.getCpuConso(), false));
+                , 0, this.cpuConso, false));
 
         // idem avec la mémoire
         data.getSolver().post(SetConstraintsFactory.sum(this.getCompSurNoeud(), this.data.getComponentsRequiredmem()
-                , 0, this.getMemConso(), false));
+                , 0, this.memConso, false));
 
 
     }

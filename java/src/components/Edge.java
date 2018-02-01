@@ -42,8 +42,12 @@ public class Edge {
         }
 
         this.id = id;
-        this.bandwidth = data.getNetworkBandwidths()[node1.getId()][node2.getId()];
-        this.latency = data.getNetworkLatencies()[node1.getId()][node2.getId()];
+
+        this.bandwidth = data.getNetworkBandwidths()[node1.getId()-1][node2.getId()-1];
+
+        if(node1 == node2) bandwidth = 0;
+
+        this.latency = data.getNetworkLatencies()[node1.getId()-1][node2.getId()-1];
 
         this.bandwidthConso = VariableFactory.bounded("bandePassanteConsommée sur l'arc "+id, 0, this.getBandwidth(),
                 data.getSolver());
@@ -51,7 +55,9 @@ public class Edge {
         this.coupleComposantSurArc = VariableFactory.set("couple de composants sur l'arc "+id, enveloppe, new int[]{},
                 data.getSolver());
 
-        this.coherenceconstraints();
+        if(node1 != node2) {
+            this.coherenceconstraints();
+        }
     }
 
     private void coherenceconstraints() {
@@ -59,7 +65,7 @@ public class Edge {
         // contrainte qui fait le lien entre les couples de composant utilisant l'arc et la bande passante consommée
 
         data.getSolver().post(SetConstraintsFactory.sum(this.coupleComposantSurArc, this.data.getCoupleComponentsRequiredBandwidth()
-                , 0, this.bandwidthConso, true));
+                , 0, this.bandwidthConso, false));
 
     }
 
