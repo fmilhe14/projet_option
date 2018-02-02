@@ -112,6 +112,8 @@ public class Path {
 
         //On s'assure avec cette contrainte que si un composant du chemin est sur un noeud, alors le noeud contient bien le composant
         nodeSetContainsComponent();
+
+        edgeSetContainsCoupleComponents();
     }
 
     private void successeurNoeudsConstraints(BoolVar different, int i) {
@@ -146,9 +148,19 @@ public class Path {
 
     private void edgeSetContainsCoupleComponents(){
 
-        for (int i = 0; i < this.arcsPossibleSuccesseur.length; i++) {
+        List<Edge> edges = this.graph.getEdges();
 
-            
+        edges.sort(Comparator.comparing(Edge::getId));
+
+        for(int i = 0; i< edges.size(); i++){
+
+            Edge edge = edges.get(i);
+
+            BoolVar setOfEdgeContainsEdge = SetConstraintsFactory.member(VariableFactory.fixed(edge.getId(), solver), arcsVisites).reif();
+            BoolVar setOfCoupleComponentsContainsPath = SetConstraintsFactory.member(VariableFactory.fixed(id, solver), edge.getCoupleComposantSurArc()).reif();
+
+            solver.post(IntConstraintFactory.arithm(setOfEdgeContainsEdge, "=", setOfCoupleComponentsContainsPath));
+
         }
     }
 
