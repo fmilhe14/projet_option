@@ -11,7 +11,6 @@ import java.util.Map;
 public class Service {
 
     private List<Component> components;
-    private Path[] path;
     private Map<PairOfComponents, Integer> requiredLatencies;
     private Map<PairOfComponents, Integer> requiredBandwidths;
 

@@ -1,12 +1,9 @@
 import components.*;
 import org.chocosolver.solver.Solver;
-import org.chocosolver.solver.constraints.IntConstraintFactory;
 import org.chocosolver.solver.trace.Chatterbox;
-import org.chocosolver.solver.variables.VariableFactory;
 import parser.Parser;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -44,6 +41,8 @@ public class Main {
 
         ArrayList<Path[]> allPaths = new ArrayList<>();
 
+        int i = 0;
+
         for(Service s: services) {
 
             Iterator<PairOfComponents> pairsOfComponents = s.getRequiredLatencies().keySet().iterator();
@@ -59,20 +58,21 @@ public class Main {
 
             Path[] paths = new Path[effectivePairOfComponents.size()];
 
-            int i = 0;
+            int j = 0;
 
             for (PairOfComponents pairOfComponents : effectivePairOfComponents) {
 
                 Component component1 = pairOfComponents.getComponent1();
                 Component component2 = pairOfComponents.getComponent2();
 
-                if(pairOfComponents.getComponent1().getPosition().getDomainSize()!=1) {
+                if (pairOfComponents.getComponent1().getPosition().getDomainSize() != 1) {
                     component1 = pairOfComponents.getComponent2();
                     component2 = pairOfComponents.getComponent1();
                 }
 
-                paths[i] = new Path(graph, component1,component2, s.getRequiredLatencies().get(pairOfComponents), solver, i);
+                paths[j] = new Path(graph, component1,component2, s.getRequiredLatencies().get(pairOfComponents), solver, i);
                 i++;
+                j++;
             }
 
             allPaths.add(paths);

@@ -81,10 +81,10 @@ public class Path {
 
         }
 
-        //     solver.post(IntConstraintFactory.alldifferent(this.arcsPossibleSuccesseur));
+   //     solver.post(IntConstraintFactory.alldifferent(this.arcsPossibleSuccesseur));
 
-        int[] enveloppe1 = new int[nbNodes];
-        for (int i = 0; i < nbNodes; i++) {
+        int[] enveloppe1 = new int[nbNodes+1];
+        for (int i = 0; i < nbNodes+1; i++) {
             enveloppe1[i] = i;
         }
 
@@ -108,17 +108,16 @@ public class Path {
         }
 
         //Contrainte de latence
-        pathLatencyConstraint();
+       pathLatencyConstraint();
 
         //On s'assure avec cette contrainte que si un composant du chemin est sur un noeud, alors le noeud contient bien le composant
         nodeSetContainsComponent();
-
         edgeSetContainsCoupleComponents();
     }
 
     private void successeurNoeudsConstraints(BoolVar different, int i) {
 
-        BoolVar contient = SetConstraintsFactory.member(VariableFactory.fixed(i, solver), this.noeudsVisites).reif();
+        BoolVar contient = SetConstraintsFactory.member(this.successeur[i], this.noeudsVisites).reif();
         solver.post(IntConstraintFactory.arithm(different, "=", contient));
     }
 

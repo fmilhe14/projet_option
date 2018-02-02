@@ -113,7 +113,7 @@ public class Data {
                     bandwidths = s.getRequiredBandwidths().get(pairOfComponents);
                     latency = s.getRequiredLatencies().get(pairOfComponents);
 
-                    if (bandwidths != 0) {
+                    if (latency > 0) {
 
                         coupleComponentsRequiredBandwidth.add(bandwidths);
                         coupleComponentsRequiredLatency.add(latency);

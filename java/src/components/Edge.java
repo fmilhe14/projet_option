@@ -2,6 +2,7 @@ package components;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.chocosolver.solver.constraints.IntConstraintFactory;
 import org.chocosolver.solver.constraints.set.SetConstraintsFactory;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.SetVar;
@@ -66,6 +67,7 @@ public class Edge {
 
         data.getSolver().post(SetConstraintsFactory.sum(this.coupleComposantSurArc, this.data.getCoupleComponentsRequiredBandwidth()
                 , 0, this.bandwidthConso, false));
+
 
     }
 
