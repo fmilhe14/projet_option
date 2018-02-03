@@ -42,9 +42,9 @@ public class Node {
         this.cpu = data.getNetworkCpus()[id];
         this.mem = data.getNetworkMem()[id];
 
-        this.cpuConso = VariableFactory.bounded("CPU consommés sur le noeud "+this.id, 0, this.cpu, data.getSolver());
-        this.memConso = VariableFactory.bounded("Mémoire consommée sur le noeud "+this.id, 0, this.mem, data.getSolver());
-        this.compSurNoeud = VariableFactory.set("Composants Sur Le Noeud "+this.id, enveloppe, new int[]{}, data.getSolver());
+        this.cpuConso = VariableFactory.bounded("CPU consommés sur le noeud " + this.id, 0, this.cpu, data.getSolver());
+        this.memConso = VariableFactory.bounded("Mémoire consommée sur le noeud " + this.id, 0, this.mem, data.getSolver());
+        this.compSurNoeud = VariableFactory.set("Composants Sur Le Noeud " + this.id, enveloppe, new int[]{}, data.getSolver());
 
         this.coherenceconstraints();
     }

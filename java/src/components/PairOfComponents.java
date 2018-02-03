@@ -12,7 +12,7 @@ public class PairOfComponents {
     private Component component1;
     private Component component2;
 
-    public PairOfComponents(Component component1, Component component2){
+    public PairOfComponents(Component component1, Component component2) {
 
         this.component1 = component1;
         this.component2 = component2;

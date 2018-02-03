@@ -50,6 +50,7 @@ public class Data {
 
     }
 
+    //Retourne la liste de tous les composants présents dans tous les services
     private List<Component> composantFactory(List<Service> services) {
 
         this.components = new ArrayList<>();
@@ -64,6 +65,7 @@ public class Data {
         return components;
     }
 
+    //Récupère sous forme de liste les cpu requis pour chaque composant, à l'indice i on trouve la quantité de cpu requise pour le composant i
     private int[] componentsRequiredCpuFactory(List<Component> componentList) {
 
         int n = componentList.size();
@@ -76,6 +78,7 @@ public class Data {
         return componentsRequiredCpu;
     }
 
+    //Récupère sous forme de liste les cpu requis pour chaque composant, à l'indice i on trouve la quantité de mémoire requise pour le composant i
     private int[] componentsRequiredMemFactory(List<Component> componentList) {
 
         int n = componentList.size();
@@ -88,6 +91,7 @@ public class Data {
         return componentsRequiredMem;
     }
 
+    //Permet d'extraire les besoins entre des paires de composants
     private void coupleComponentsRequirementsFactory() {
 
         ArrayList<Integer> coupleComponentsRequiredBandwidth = new ArrayList<>();
@@ -135,6 +139,7 @@ public class Data {
 
     }
 
+    //Méthode pour construire les noeuds à partir des data
     public List<Node> buildNodes() {
 
         ArrayList<Node> nodes = new ArrayList<>();
@@ -147,6 +152,7 @@ public class Data {
         return nodes;
     }
 
+    //Méthode pour construire les arcs à partir des data
     public List<Edge> buildEdges(List<Node> nodes) {
 
         nodes.sort(Comparator.comparing(Node::getId)); //Pour avoir la liste triée en fonction des indices des composants
@@ -156,18 +162,18 @@ public class Data {
         int edgeId = 1;
 
         for (int i = 0; i < networkLatencies.length; i++) {
-            for (int j = i ; j < networkLatencies.length; j++) {
+            for (int j = i; j < networkLatencies.length; j++) {
 
-                if(i == j){
+                if (i == j) {
 
                     edges.add(new Edge(edgeId, nodes.get(i), nodes.get(j), this));
-                    edgeId ++;
+                    edgeId++;
                 }
 
                 if (networkLatencies[i][j] != 0) {
 
                     edges.add(new Edge(edgeId, nodes.get(i), nodes.get(j), this));
-                    edgeId ++ ;
+                    edgeId++;
                 }
             }
         }

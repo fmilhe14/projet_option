@@ -11,7 +11,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Solver solver = new Solver("");
+        Solver solver = new Solver("POC Projet d'Option");
 
         Parser parser = new Parser(solver, "edge.properties");
 
@@ -31,8 +31,7 @@ public class Main {
 
         Chatterbox.showSolutions(solver);
         solver.findSolution();
-        solver.getVars();
-        Chatterbox.printStatistics(solver);
+        Chatterbox.printShortStatistics(solver);
 
     }
 
@@ -43,7 +42,7 @@ public class Main {
 
         int i = 0;
 
-        for(Service s: services) {
+        for (Service s : services) {
 
             Iterator<PairOfComponents> pairsOfComponents = s.getRequiredLatencies().keySet().iterator();
 
@@ -53,7 +52,8 @@ public class Main {
 
                 PairOfComponents pairOfComponents = pairsOfComponents.next();
 
-                if (s.getRequiredLatencies().get(pairOfComponents) != -1) effectivePairOfComponents.add(pairOfComponents);
+                if (s.getRequiredLatencies().get(pairOfComponents) != -1)
+                    effectivePairOfComponents.add(pairOfComponents);
             }
 
             Path[] paths = new Path[effectivePairOfComponents.size()];
@@ -70,13 +70,13 @@ public class Main {
                     component2 = pairOfComponents.getComponent1();
                 }
 
-                paths[j] = new Path(graph, component1,component2, s.getRequiredLatencies().get(pairOfComponents), solver, i);
+                paths[j] = new Path(graph, component1, component2, s.getRequiredLatencies().get(pairOfComponents), solver, i);
                 i++;
                 j++;
             }
 
             allPaths.add(paths);
         }
-        }
+    }
 
 }

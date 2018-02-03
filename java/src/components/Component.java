@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.chocosolver.solver.variables.IntVar;
 
-@EqualsAndHashCode@Getter
+@EqualsAndHashCode
+@Getter
 @Setter
 public class Component {
 

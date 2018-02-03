@@ -47,6 +47,7 @@ public class Path {
         int nbArcs = this.getGraph().getEdges().size();
 
         this.successeur = new IntVar[nbNodes + 1];
+        this.arcsPossibleSuccesseur = new IntVar[nbNodes + 1];
 
         for (int i = 0; i < nbNodes + 1; i++) {
 
@@ -56,13 +57,47 @@ public class Path {
         solver.post(IntConstraintFactory.arithm(successeur[0], "=", componentA.getPosition()));
         solver.post(IntConstraintFactory.alldifferent(successeur));
 
-        this.arcsPossibleSuccesseur = new IntVar[nbNodes + 1];
+        buildConstraintsBetweenSuccesseurNodesAndSuccesseurArc(nbArcs);
+
+        int[] enveloppe1 = buildEnveloppe(nbNodes + 1);
+        this.noeudsVisites = VariableFactory.set("noeudsVisites", enveloppe1, new int[]{}, this.getSolver());
+
+        int[] enveloppe2 = buildEnveloppe(nbArcs);
+        this.arcsVisites = VariableFactory.set("arcsVisites", enveloppe2, new int[]{}, this.getSolver());
+
+        //Si un noeud a un successeur, alors l'arc qui relie les deux noeuds doit être dans le SetVar des arcs visités
+        for (int i = 0; i < successeur.length; i++) {
+
+            BoolVar different = IntConstraintFactory.arithm(this.successeur[i], "!=", i).reif();
+
+            //Si un noeud a un successeur, alors ce noeud doit être dans le SetVar des noeuds visités
+            successeurNoeudsConstraints(different, i);
+            //Si un noeud a un successeur, alors l'arc qui relie les deux noeuds doit être dans le SetVar des arcs visités
+            successeurArcsConstraints(different, i);
+        }
+
+        //Contrainte de latence sur les deux composants
+        pathLatencyConstraint();
+
+        //On s'assure avec cette contrainte que si un composant du chemin est sur un noeud, alors le noeud contient bien le composant
+        nodeSetContainsComponent();
+
+        //Pour prendre en compte les arcs empruntés et ajuster la bande passante disponuble
+        edgeSetContainsCoupleComponents();
+    }
+
+    private void buildConstraintsBetweenSuccesseurNodesAndSuccesseurArc(int nbArcs) {
+
+
+        solver.post(IntConstraintFactory.arithm(successeur[0], "=", componentA.getPosition()));
+        solver.post(IntConstraintFactory.alldifferent(successeur));
 
         for (int i = 0; i < successeur.length; i++) {
 
             int[] potsuccs = convertIntegers(findPotentialSucc(i));
             int[] potarcs = findPotentialArcs(i, potsuccs);
 
+            //Cas du noeud fictif 0
             if (i == 0) {
                 potsuccs = new int[]{componentA.getPosition().getValue()};
                 potarcs = new int[]{0};
@@ -80,39 +115,6 @@ public class Path {
             solver.post(IntConstraintFactory.arithm(successeurDeIestZero.reif(), "=", indiceOfComponent2.reif()));
 
         }
-
-   //     solver.post(IntConstraintFactory.alldifferent(this.arcsPossibleSuccesseur));
-
-        int[] enveloppe1 = new int[nbNodes+1];
-        for (int i = 0; i < nbNodes+1; i++) {
-            enveloppe1[i] = i;
-        }
-
-        this.noeudsVisites = VariableFactory.set("noeudsVisites", enveloppe1, new int[]{}, this.getSolver());
-
-        int[] enveloppe2 = new int[nbArcs];
-        for (int i = 0; i < nbArcs; i++) {
-            enveloppe2[i] = i;
-        }
-
-        this.arcsVisites = VariableFactory.set("arcsVisites", enveloppe2, new int[]{}, this.getSolver());
-
-        //Si un noeud a un successeur, alors ce noeud doit être dans le SetVar des noeuds visités
-
-        for (int i = 0; i < successeur.length; i++) {
-
-            BoolVar different = IntConstraintFactory.arithm(this.successeur[i], "!=", i).reif();
-
-            successeurNoeudsConstraints(different, i);
-            successeurArcsConstraints(different, i);
-        }
-
-        //Contrainte de latence
-       pathLatencyConstraint();
-
-        //On s'assure avec cette contrainte que si un composant du chemin est sur un noeud, alors le noeud contient bien le composant
-        nodeSetContainsComponent();
-        edgeSetContainsCoupleComponents();
     }
 
     private void successeurNoeudsConstraints(BoolVar different, int i) {
@@ -145,18 +147,18 @@ public class Path {
         }
     }
 
-    private void edgeSetContainsCoupleComponents(){
+    private void edgeSetContainsCoupleComponents() {
 
         List<Edge> edges = this.graph.getEdges();
 
         edges.sort(Comparator.comparing(Edge::getId));
 
-        for(int i = 0; i< edges.size(); i++){
+        for (int i = 0; i < edges.size(); i++) {
 
             Edge edge = edges.get(i);
 
             BoolVar setOfEdgeContainsEdge = SetConstraintsFactory.member(VariableFactory.fixed(edge.getId(), solver), arcsVisites).reif();
-            BoolVar setOfCoupleComponentsContainsPath = SetConstraintsFactory.member(VariableFactory.fixed(id, solver), edge.getCoupleComposantSurArc()).reif();
+            BoolVar setOfCoupleComponentsContainsPath = SetConstraintsFactory.member(VariableFactory.fixed(id, solver), edge.getCoupleComponentsOnEdge()).reif();
 
             solver.post(IntConstraintFactory.arithm(setOfEdgeContainsEdge, "=", setOfCoupleComponentsContainsPath));
 
@@ -248,5 +250,15 @@ public class Path {
         }
 
         return potentialArcs;
+    }
+
+    private int[] buildEnveloppe(int size) {
+
+        int[] enveloppe = new int[size];
+        for (int i = 0; i < size; i++) {
+            enveloppe[i] = i;
+        }
+
+        return enveloppe;
     }
 }
