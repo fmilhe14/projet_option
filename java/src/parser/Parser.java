@@ -93,10 +93,6 @@ public class Parser {
         return prop.getProperty(key);
     }
 
-    public static void main(String[] args) {
-        System.out.println(Arrays.deepToString(new Parser(new Solver(), "edge.properties").networkLatencies()));
-    }
-
     public int[][] networkLatencies() {
         return modelValuePerNodePair(1);
     }
