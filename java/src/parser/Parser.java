@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 
 import static java.lang.Integer.parseInt;
@@ -90,43 +91,6 @@ public class Parser {
 
     private String getProperty(String key) {
         return prop.getProperty(key);
-    }
-
-    public List<Service> services() {
-
-        List<Service> rep = new ArrayList<>();
-
-        int[][] service;
-
-        int id = 0;
-
-        for (int i = 0; i < nbServices; i++) {
-            service = components[i];
-
-            List<Component> components = makeComponentsList(id, service);
-
-            id += components.size();
-
-            Map<PairOfComponents, Integer> latencies = new HashMap<>();
-            Map<PairOfComponents, Integer> bandwidths = new HashMap<>();
-
-            PairOfComponents pairOfComponents;
-            int[] pairRequirements;
-
-            for (int j = 0; j < service.length; j++) {
-                for (int k = j + 1; k < service.length; k++) {
-
-                    pairOfComponents = new PairOfComponents(components.get(j), components.get(k));
-                    pairRequirements = servicesTopologies[i][j][k];
-
-                    bandwidths.put(pairOfComponents, pairRequirements[1]);
-                    latencies.put(pairOfComponents, pairRequirements[2]);
-                }
-            }
-
-            rep.add(new Service(components, latencies, bandwidths));
-        }
-        return rep;
     }
 
     public int[][] networkLatencies() {
@@ -214,6 +178,43 @@ public class Parser {
                 ).toArray(int[][]::new);
     }
 
+    public List<Service> services() {
+
+        List<Service> rep = new ArrayList<>();
+
+        int[][] service;
+
+        int id = 0;
+
+        for (int i = 0; i < nbServices; i++) {
+            service = components[i];
+
+
+            id += components.length;
+            List<Component> components = makeComponentsList(id, service);
+
+            Map<PairOfComponents, Integer> latencies = new HashMap<>();
+            Map<PairOfComponents, Integer> bandwidths = new HashMap<>();
+
+            PairOfComponents pairOfComponents;
+            int[] pairRequirements;
+
+            for (int j = 0; j < service.length; j++) {
+                for (int k = j + 1; k < service.length; k++) {
+
+                    pairOfComponents = new PairOfComponents(components.get(j), components.get(k));
+                    pairRequirements = servicesTopologies[i][j][k];
+
+                    bandwidths.put(pairOfComponents, pairRequirements[1]);
+                    latencies.put(pairOfComponents, pairRequirements[2]);
+                }
+            }
+
+            rep.add(new Service(components, latencies, bandwidths));
+        }
+        return rep;
+    }
+
     /**
      * Call this method on a property whose value is a 3rd degree nested array-like String of ints
      * (such as {{{1, 2}, {3}}, {{4}}} ).
@@ -223,14 +224,18 @@ public class Parser {
      * @throws InvalidKeyException if {@code key} is not a property in the given properties file.
      */
     private int[][][] collectIntInArraysThirdDegree(String key) throws InvalidKeyException {
-        String property = getProperty(key);
+        return collectIntInArray(key, this::buildMatrixThirdDegree);
+    }
 
-        if (property == null) {
-            throw new InvalidKeyException("property ".concat(key).concat(" is not in ").concat(fileName));
-        } else {
-            ParserNode tree = new ParserNode(property.replaceAll(COMPONENT_NAMES, ""));
-            return buildMatrixThirdDegree(tree);
-        }
+    /**
+     * Same as the above method but with fourth degree properties.
+     *
+     * @param key The name of the property whose values to collect.
+     * @return The values in the required property in the same structure as given in the properties file.
+     * @throws InvalidKeyException if {@code key} is not a property in the given properties file.
+     */
+    private int[][][][] collectIntInArrayFourthDegree(String key) throws InvalidKeyException {
+        return collectIntInArray(key, this::buildMatrixFourthDegree);
     }
 
     /**
@@ -250,24 +255,6 @@ public class Parser {
     }
 
     /**
-     * Same as the above method but with fourth degree properties.
-     *
-     * @param key The name of the property whose values to collect.
-     * @return The values in the required property in the same structure as given in the properties file.
-     * @throws InvalidKeyException if {@code key} is not a property in the given properties file.
-     */
-    private int[][][][] collectIntInArrayFourthDegree(String key) throws InvalidKeyException {
-        String property = getProperty(key);
-
-        if (property == null) {
-            throw new InvalidKeyException("property ".concat(key).concat(" is not in ").concat(fileName));
-        } else {
-            ParserNode tree = new ParserNode(property.replaceAll(COMPONENT_NAMES, ""));
-            return buildMatrixFourthDegree(tree);
-        }
-    }
-
-    /**
      * @param tree the parsing tree generated from the property given in the above method
      * @return just like buildMatrixThirdDegree, but for 4th degree properties.
      */
@@ -275,5 +262,16 @@ public class Parser {
         return tree.streamChildren()
                 .map(this::buildMatrixThirdDegree)
                 .toArray(int[][][][]::new);
+    }
+
+    private <R> R collectIntInArray(String key, Function<ParserNode, R> supplier) throws InvalidKeyException {
+        String property = getProperty(key);
+
+        if (property == null) {
+            throw new InvalidKeyException("property ".concat(key).concat(" is not in ").concat(fileName));
+        } else {
+            ParserNode tree = new ParserNode(property.replaceAll(COMPONENT_NAMES, ""));
+            return supplier.apply(tree);
+        }
     }
 }
