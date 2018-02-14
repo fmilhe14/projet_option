@@ -46,7 +46,10 @@ public class Path {
         int nbNodes = this.getGraph().getNodes().size();
         int nbArcs = this.getGraph().getEdges().size();
 
+        //Liste permettant de savoir les noeuds par lesquel est passé le chemin
         this.successeur = new IntVar[nbNodes + 1];
+
+        //Liste permettant de savoir les arcs par lesquel est passé le chemin
         this.arcsPossibleSuccesseur = new IntVar[nbNodes + 1];
 
         for (int i = 0; i < nbNodes + 1; i++) {
@@ -57,6 +60,7 @@ public class Path {
         solver.post(IntConstraintFactory.arithm(successeur[0], "=", componentA.getPosition()));
         solver.post(IntConstraintFactory.alldifferent(successeur));
 
+        //Contrainte qui permet de s'assurer que si l'on va d'un noeud à un autre, alors on emprunte le bon arc
         buildConstraintsBetweenSuccesseurNodesAndSuccesseurArc(nbArcs);
 
         int[] enveloppe1 = buildEnveloppe(nbNodes + 1);
@@ -79,7 +83,7 @@ public class Path {
         //Contrainte de latence sur les deux composants
         pathLatencyConstraint();
 
-        //On s'assure avec cette contrainte que si un composant du chemin est sur un noeud, alors le noeud contient bien le composant
+        //On s'assure avec cette contrainte que le noeud contient bien le composant (donc mise à jour des cpus/mem occupée)
         nodeSetContainsComponent();
 
         //Pour prendre en compte les arcs empruntés et ajuster la bande passante disponuble
@@ -173,7 +177,6 @@ public class Path {
 
         for (int i = 0; i < this.getGraph().getEdges().size(); i++)
             latenciesEdges[i] = this.getGraph().getEdges().get(i).getLatency();
-
 
         solver.post(SetConstraintsFactory.sum(this.arcsVisites, latenciesEdges
                 , 0, VariableFactory.bounded("MAX LATENCY", 0, requiredLatency, solver), false));

@@ -60,7 +60,8 @@ public class Data {
             components.addAll(s.getComponents());
         }
 
-        components.sort(Comparator.comparing(Component::getId)); //Pour avoir la liste triée en fonction des indices des composants
+        //Pour avoir la liste triée en fonction des indices des composants
+        components.sort(Comparator.comparing(Component::getId));
 
         return components;
     }

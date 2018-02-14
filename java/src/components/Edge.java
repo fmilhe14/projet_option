@@ -64,9 +64,8 @@ public class Edge {
         }
     }
 
+    // contrainte qui fait le lien entre les couples de composant passant par l'arc et la bande passante consommée
     private void coherenceconstraints() {
-
-        // contrainte qui fait le lien entre les couples de composant utilisant l'arc et la bande passante consommée
 
         data.getSolver().post(SetConstraintsFactory.sum(this.coupleComponentsOnEdge, this.data.getCoupleComponentsRequiredBandwidth()
                 , 0, this.bandwidthConso, false));
