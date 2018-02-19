@@ -15,12 +15,12 @@ Find the right edge site on which to place each component of each service.
         ```mkdir edge_computing && cd edge_computing```
 - Clone this repository:  
         ```git clone https://github.com/fmilhe14/projet_option.git```
-- Move to java directory:  
-        ```cd java```
 - Build (install dependencies):  
-        ```mvn clean install```
+    * From command line : Move to the "java" directory ```cd java``` and run ```mvn clean install```
+    * From JetBrains IntelliJ : Right click on ```pom.xml``` file and select ```Add as Maven project```
 
-### Run
+
+### Run`code
 
 #### Properties file
 
@@ -34,5 +34,4 @@ If you wrote your own ```.properties``` file, please change the argument in line
 
 ### Run the project
 
-You can only the project from inside an IDE, by running the main method in ```java/src/Main.java```
-
+You can run the project from inside an IDE, by running the main method in ```java/src/Main.java```
